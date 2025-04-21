@@ -45,7 +45,18 @@ const themeOptions = {
     },
     typography: {
         fontFamily: "'Roboto', 'Arial', sans-serif",
+
     },
+    // typography: {
+    //     fontFamily: "'Roboto', 'Arial', sans-serif",
+    //     body1: {
+    //         fontSize: '0.85rem',
+    //     },
+    //     button: {
+    //         fontSize: '0.8rem',
+    //         textTransform: 'none',
+    //     },
+    // },
 };
 
 // Create the theme

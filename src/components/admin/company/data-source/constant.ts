@@ -1,0 +1,1 @@
+export const fetchUrl = '/admin/company/locations';

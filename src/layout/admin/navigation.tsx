@@ -3,6 +3,7 @@
 import CompanyIcon from '@mui/icons-material/BusinessCenter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocationIcon from '@mui/icons-material/LocationCity';
+import StorageIcon from '@mui/icons-material/Storage';
 import UserIcon from '@mui/icons-material/People';
 import RoleIcon from '@mui/icons-material/SupervisedUserCircle';
 import PermissionIcon from '@mui/icons-material/VerifiedUser';
@@ -39,6 +40,11 @@ const adminNavigation: Navigation = [
                 segment: 'locations',
                 title: 'Locations',
                 icon: <LocationIcon />,
+            },
+            {
+                segment: 'data-source',
+                title: 'Data Source',
+                icon: <StorageIcon />,
             },
         ]
     },
