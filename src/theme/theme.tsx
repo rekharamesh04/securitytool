@@ -22,7 +22,7 @@ const themeOptions = {
             contrastText: '#ffffff', // Text color for secondary backgrounds
         },
         background: {
-            default: '#ffffff', // Default background color
+            default: '#fbfcfe', // Default background color
             paper: '#ffffff',   // Background for paper components
         },
         text: {
@@ -44,19 +44,28 @@ const themeOptions = {
         },
     },
     typography: {
-        fontFamily: "'Roboto', 'Arial', sans-serif",
-
+        fontFamily: "'Inter', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+        h1: {
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '3.5rem',
+            fontWeight: 700,
+        },
+        h2: {
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '2.75rem',
+            fontWeight: 600,
+        },
+        h3: {
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '2rem',
+            fontWeight: 600,
+        },
+        body1: {
+            fontSize: '16px',
+            fontWeight: 400,
+            fontStyle: 'normal',
+        },
     },
-    // typography: {
-    //     fontFamily: "'Roboto', 'Arial', sans-serif",
-    //     body1: {
-    //         fontSize: '0.85rem',
-    //     },
-    //     button: {
-    //         fontSize: '0.8rem',
-    //         textTransform: 'none',
-    //     },
-    // },
 };
 
 // Create the theme

@@ -5,21 +5,31 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
 import localFont from "next/font/local";
+import '@fontsource/inter'; 
+import '@fontsource/plus-jakarta-sans';
 import "./globals.css";
+// import { Roboto } from 'next/font/google';
+
+// const roboto = Roboto({
+//   weight: ['300', '400', '500', '700'],
+//   subsets: ['latin'],
+//   display: 'swap',
+//   variable: '--font-roboto',
+// });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
+  variable: '--font-geist-sans',
   weight: "100 900",
 });
 
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+  variable: '--font-geist-mono',
   weight: "100 900",
 });
 
-export default function RootLayout({
+export default function RootLayout({  
   children,
 }: Readonly<{
   children: React.ReactNode;

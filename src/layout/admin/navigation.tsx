@@ -1,5 +1,4 @@
 'use client';
-
 import CompanyIcon from '@mui/icons-material/BusinessCenter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocationIcon from '@mui/icons-material/LocationCity';
