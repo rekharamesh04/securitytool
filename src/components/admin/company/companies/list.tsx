@@ -4,6 +4,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { getFetcher } from "@/utils/fetcher";
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
   Icon,
@@ -23,6 +24,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { fetchUrl } from "./constant";
 import CompanyForm from "./form";
+import { useCompanyContext } from "@/contexts/CompanyContext";
+
+interface Company {
+  _id: number;
+  name: string;
+  // Add other fields if needed
+}
+
 
 export default function CompanyList() {
   const router = useRouter();
@@ -33,6 +42,7 @@ export default function CompanyList() {
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
+  const { setSelectedCompany } = useCompanyContext();
 
   // Debounce search text
   useEffect(() => {
@@ -125,6 +135,14 @@ export default function CompanyList() {
     }
   };
 
+  const handleSetContext = useCallback((company: Company) => {
+    console.log("Set context for:", company);
+    setSelectedCompany(company);
+    notifications.show("Company set successfully!", { severity: "success" });
+    // Do other things if needed
+  }, [setSelectedCompany]);
+
+
   const columns: GridColDef[] = useMemo(
     () => [
       {
@@ -175,6 +193,23 @@ export default function CompanyList() {
           </>
         ),
       },
+      {
+        field: "setContext",
+        headerName: "Set Context",
+        width: 150,
+        renderCell: (params) => (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleSetContext(params.row)}
+          >
+            Set Context
+          </Button>
+        ),
+        sortable: false,
+        filterable: false,
+      }
+
     ],
     [handleEdit, handleDelete]
   );

@@ -24,9 +24,10 @@ import { useDialogs, useNotifications } from "@toolpad/core";
 // import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import useSWR, { mutate } from "swr";
-import LocationForm from "../../../company/locations/form";
 import { fetchUrl } from "./constant";
 import theme from "@/theme/theme";
+import DataSourceForm from "./form";
+import { useCompanyContext } from "@/contexts/CompanyContext";
 
 export default function DataSource() {
   const dialogs = useDialogs();
@@ -38,6 +39,8 @@ export default function DataSource() {
     pageSize: 10,
   });
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
+  const { selectedCompany } = useCompanyContext();
+
 
   const params = useMemo(() => {
     const searchParams = new URLSearchParams();
@@ -62,7 +65,7 @@ export default function DataSource() {
   );
   const handleAdd = async () => {
     const result = await dialogs.open((props) => (
-      <LocationForm {...props} id="new" />
+      <DataSourceForm {...props} id="new" />
     ));
     if (result) {
       mutate(`${fetchUrl}?${params.toString()}`, { revalidate: true });
@@ -96,7 +99,7 @@ export default function DataSource() {
   const handleEdit = useCallback(
     async (id: number) => {
       const result = await dialogs.open((props) => (
-        <LocationForm {...props} id={id} />
+        <DataSourceForm {...props} id={id} />
       ));
       if (result) {
         mutate(`${fetchUrl}?${params.toString()}`, { revalidate: true });
@@ -105,76 +108,18 @@ export default function DataSource() {
     [dialogs, params]
   );
 
-  // const columns: GridColDef[] = useMemo(
-  //     () => [
-  //         {
-  //             field: "company",
-  //             headerName: "Company",
-  //             renderCell: (params: any) => {
-  //                 if (params?.row?.company?.name) {
-  //                     return (
-  //                         <Chip color="primary" label={params.row.company.name} />
-  //                     )
-  //                 }
-  //             },
-  //             width: 200,
-  //         },
-  //         // { field: "name", headerName: "Name", width: 200 },
-  //         // { field: "address", headerName: "Address", width: 200 },
-  //         // { field: "city", headerName: "City", width: 200 },
-  //         // { field: "state", headerName: "State", width: 200 },
-  //         // { field: "zip", headerName: "Zip", width: 200 },
-  //         {
-  //             field: 'actions',
-  //             headerName: "Action",
-  //             type: 'actions',
-  //             width: 100,
-  //             renderCell: (params) => (
-  //                 <>
-  //                     <IconButton
-  //                         onClick={() => handleEdit(params.row._id)}
-  //                         aria-label="edit"
-  //                         color="primary"
-  //                     >
-  //                         <Icon>edit</Icon>
-  //                     </IconButton>
-  //                     <IconButton
-  //                         onClick={() => handleDelete(params.row._id)}
-  //                         aria-label="delete"
-  //                         color="error"
-  //                     >
-  //                         <Icon>delete</Icon>
-  //                     </IconButton>
-  //                 </>
-  //             )
-  //         },
-  //     ],
-  //     [handleDelete, handleEdit]
-  // );
 
   const columns: GridColDef[] = useMemo(
     () => [
       {
-        field: "company",
-        headerName: "Company",
-        flex: 1.2,
-        minWidth: 200,
-        renderCell: (params: any) => {
-          if (params?.row?.company?.name) {
-            return <Chip color="primary" label={params.row.company.name} />;
-          }
-        },
-        width: 200,
-      },
-      {
         field: "name",
-        headerName: "Datastore",
+        headerName: "DATASTORE",
         flex: 1.2,
         minWidth: 200,
         renderCell: ({ row }) => (
           <Box>
             <Typography fontWeight={600} variant="body2">
-              {row.name}
+              {row.datastore}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {row.engine}
@@ -184,12 +129,12 @@ export default function DataSource() {
       },
       {
         field: "account",
-        headerName: "Account",
+        headerName: "ACCOUNT",
         flex: 1,
-        minWidth: 150,
+        minWidth: 200,
         renderCell: ({ row }) => (
           <Chip
-            label={row.accountName}
+            label={row.account}
             variant="outlined"
             size="small"
             sx={{ borderRadius: 1 }}
@@ -198,11 +143,11 @@ export default function DataSource() {
       },
       {
         field: "dataSensitivity",
-        headerName: "Sensitivity",
-        width: 120,
+        headerName: "SENSITIVITY",
+        width: 150,
         renderCell: ({ row }) => (
           <Chip
-            label={row.dataSensitivity}
+            label={row.sensitivity}
             size="small"
             variant="filled"
             sx={{
@@ -214,43 +159,41 @@ export default function DataSource() {
                 row.dataSensitivity === "Restricted"
                   ? theme.palette.error.light
                   : theme.palette.success.light
-              ),
+              )
             }}
           />
         ),
       },
-      // {
-      //   field: "sensitiveRecords",
-      //   headerName: "Sensitive Records",
-      //   width: 140,
-      //   align: "center",
-      //   headerAlign: "center",
-      //   renderCell: ({ row }) => (
-      //     <Typography variant="body2">
-      //       {row.sensitiveRecords}
-      //     </Typography>
-      //   ),
-      // },
+      {
+        field: "sensitiveRecords",
+        headerName: "SENSITIVE RECORDS",
+        width: 170,
+        align: "center",
+        headerAlign: "center",
+        renderCell: ({ row }) => (
+          <Typography variant="body2">
+            {row.sensitive_records}
+          </Typography>
+        ),
+      },
       {
         field: "dataClass",
-        headerName: "Data Classes",
+        headerName: "DATA",
         flex: 2,
-        minWidth: 250,
+        minWidth: 100,
         renderCell: ({ row }) => (
-          <Box display="flex" gap={1} sx={{ flexWrap: "wrap", maxWidth: 300 }}>
-            {row.dataClasses
-              ?.slice(0, 3)
-              .map((cls: string, index: number) => (
-                <Chip
-                  key={index}
-                  label={cls}
-                  size="small"
-                  variant="outlined"
-                  sx={{ borderRadius: 1 }}
-                />
-              ))}
+          <Box display="flex" gap={1} sx={{ flexWrap: 'wrap', maxWidth: 300 }}>
+            {row.dataClasses?.slice(0, 3).map((cls: string, index: number) => (
+              <Chip
+                key={index}
+                label={cls}
+                size="small"
+                variant="outlined"
+                sx={{ borderRadius: 1 }}
+              />
+            ))}
             {row.dataClasses?.length > 3 && (
-              <Tooltip title={row.dataClasses.slice(3).join(", ")}>
+              <Tooltip title={row.dataClasses.slice(3).join(', ')}>
                 <Chip
                   label={`+${row.dataClasses.length - 3}`}
                   size="small"
@@ -263,8 +206,8 @@ export default function DataSource() {
       },
       {
         field: "scanStatus",
-        headerName: "Status",
-        width: 120,
+        headerName: "STATUS",
+        width: 100,
         renderCell: ({ row }) => (
           <Chip
             label={row.scanStatus}
@@ -279,43 +222,25 @@ export default function DataSource() {
                 row.scanStatus === "Scanned"
                   ? theme.palette.success.light
                   : theme.palette.warning.light
-              ),
+              )
             }}
           />
         ),
       },
       {
         field: "actions",
-        headerName: "Actions",
+        headerName: "ACTIONS",
         width: 120,
         align: "center",
         renderCell: ({ row }) => (
           <Box display="flex" gap={0.5}>
             <Tooltip title="Edit">
-              <IconButton onClick={() => handleEdit(row._id)} size="small" color="primary"
-              sx={{
-                backgroundColor: "#D4E3F1",
-                marginRight: "8px",
-                "&:hover": {
-                  backgroundColor: "#D4E3F1 !important", // Darker blue on hover
-                },
-              }}>
+              <IconButton onClick={() => handleEdit(row._id)} size="small">
                 <Icon fontSize="small">edit</Icon>
               </IconButton>
             </Tooltip>
             <Tooltip title="Delete">
-              <IconButton
-                onClick={() => handleDelete(row._id)}
-                size="small"
-                color="error"
-                sx={{
-                  backgroundColor: "#FFDADC",
-                  marginRight: "8px",
-                  "&:hover": {
-                    backgroundColor: "#FFDADC !important", // Darker blue on hover
-                  },
-                }}
-              >
+              <IconButton onClick={() => handleDelete(row._id)} size="small" color="error">
                 <Icon fontSize="small">delete</Icon>
               </IconButton>
             </Tooltip>
@@ -323,37 +248,13 @@ export default function DataSource() {
         ),
       },
     ],
-    [handleDelete, handleEdit, theme]
+    [handleDelete, handleEdit, theme,selectedCompany]
   );
 
   return (
-    <Box p={3}>
-      {/* <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} gap={2}>
-          <TextField
-            variant="outlined"
-            placeholder="Search locations..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Icon fontSize="small">search</Icon>
-                </InputAdornment>
-              ),
-              sx: { borderRadius: 2 }
-            }}
-            sx={{ flexGrow: 1, maxWidth: 600 }}
-          />
+    <Box pt={0} pb={0} px={3}>
+      <Typography sx={{ fontSize: '1.5rem !important' }}>Company: {selectedCompany?.name}</Typography>
 
-          <Button
-            startIcon={<Icon>add</Icon>}
-            variant="contained"
-            onClick={handleAdd}
-            sx={{ borderRadius: 2, textTransform: 'none' }}
-          >
-            New Data
-          </Button>
-        </Box> */}
       <Box
         sx={{
           display: "flex",

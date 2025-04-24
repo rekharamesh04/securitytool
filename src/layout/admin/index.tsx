@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import adminNavigation from "./navigation";
 import { NextAppProvider } from "@toolpad/core/nextjs";
+import { CompanyProvider } from '@/contexts/CompanyContext';
 interface LayoutProps {
   window?: () => Window;
   children: React.ReactNode;
@@ -63,6 +64,7 @@ export default function AdminLayout(props: LayoutProps) {
         },
       }}
     >
+      <CompanyProvider>
       <DashboardLayout
         sx={{
           // Header background styles
@@ -154,6 +156,7 @@ export default function AdminLayout(props: LayoutProps) {
           {children}
         </PageContainer>
       </DashboardLayout>
+      </CompanyProvider>
     </NextAppProvider>
   );
 }
