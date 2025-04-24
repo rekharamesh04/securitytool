@@ -133,6 +133,14 @@ export default function CompanyForm({
                         helperText={errors.name?.message}
                         {...register('name')}
                     />
+                                        <TextField
+                        label="Company Address"
+                        fullWidth
+                        margin="normal"
+                        InputLabelProps={{ shrink: true }}
+                        error={!!errors.name}
+                        helperText={errors.name?.message}
+                    />
 
                     {/* Status Field */}
                     <FormControlLabel

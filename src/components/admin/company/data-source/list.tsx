@@ -292,7 +292,14 @@ export default function DataSource() {
         renderCell: ({ row }) => (
           <Box display="flex" gap={0.5}>
             <Tooltip title="Edit">
-              <IconButton onClick={() => handleEdit(row._id)} size="small">
+              <IconButton onClick={() => handleEdit(row._id)} size="small" color="primary"
+              sx={{
+                backgroundColor: "#D4E3F1",
+                marginRight: "8px",
+                "&:hover": {
+                  backgroundColor: "#D4E3F1 !important", // Darker blue on hover
+                },
+              }}>
                 <Icon fontSize="small">edit</Icon>
               </IconButton>
             </Tooltip>
@@ -301,6 +308,13 @@ export default function DataSource() {
                 onClick={() => handleDelete(row._id)}
                 size="small"
                 color="error"
+                sx={{
+                  backgroundColor: "#FFDADC",
+                  marginRight: "8px",
+                  "&:hover": {
+                    backgroundColor: "#FFDADC !important", // Darker blue on hover
+                  },
+                }}
               >
                 <Icon fontSize="small">delete</Icon>
               </IconButton>

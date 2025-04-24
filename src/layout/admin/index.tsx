@@ -131,18 +131,17 @@ export default function AdminLayout(props: LayoutProps) {
       >
         <PageContainer
           sx={{
-            color: "rgb(17, 4, 122)",
+            color: "rgb(30, 14, 145)",
             "& .MuiTypography-h4": {
               // Style for headings above content
-              color: "rgb(17, 4, 122)",
+              color: "rgb(30, 14, 145)",
               fontSize: "2rem",
-              fontWeight: 600,
               marginBottom: "1rem",
               fontFamily: "'Inter', sans-serif",
             },
             "& .MuiTypography-body1": {
               // Style for regular text
-              color: "rgba(17, 4, 122, 0.8)",
+              color: "rgb(30, 14, 145)",
               fontSize: "1rem",
               fontWeight: "600",
               lineHeight: 1.6,

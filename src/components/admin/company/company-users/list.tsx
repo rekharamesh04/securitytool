@@ -129,7 +129,7 @@ export default function CompanyUserList() {
     () => [
       {
         field: "company",
-        headerName: "company",
+        headerName: "Company",
         renderCell: (params: any) => {
           if (params?.row?.company?.name) {
             return <Chip color="primary" label={params.row.company.name} />;
@@ -150,6 +150,13 @@ export default function CompanyUserList() {
               onClick={() => handleEdit(params.row._id)}
               aria-label="edit"
               color="primary"
+              sx={{
+                backgroundColor: "#D4E3F1",
+                marginRight: "8px",
+                "&:hover": {
+                  backgroundColor: "#D4E3F1 !important", // Darker blue on hover
+                },
+              }}
             >
               <Icon>edit</Icon>
             </IconButton>
@@ -157,6 +164,13 @@ export default function CompanyUserList() {
               onClick={() => handleDelete(params.row._id)}
               aria-label="delete"
               color="error"
+              sx={{
+                backgroundColor: "#FFDADC",
+                marginRight: "8px",
+                "&:hover": {
+                  backgroundColor: "#FFDADC !important", // Darker blue on hover
+                },
+              }}
             >
               <Icon>delete</Icon>
             </IconButton>

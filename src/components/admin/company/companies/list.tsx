@@ -4,6 +4,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { getFetcher } from "@/utils/fetcher";
 import {
   Box,
+  Chip,
   CircularProgress,
   Icon,
   IconButton,
@@ -126,18 +127,34 @@ export default function CompanyList() {
 
   const columns: GridColDef[] = useMemo(
     () => [
-      { field: "name", headerName: "Name", width: 200 },
+      {
+        field: "name",
+        headerName: "Name",
+        renderCell: (params: any) => {
+          if (params?.row?.name) {
+            return <Chip color="primary" label={params.row.name} />;
+          }
+        },
+        width: 200,
+      },
       {
         field: "actions",
         headerName: "Action",
         type: "actions",
-        width: 100,
+        width: 200,
         renderCell: (params) => (
           <>
             <IconButton
               onClick={() => handleEdit(params.row._id)}
               aria-label="edit"
               color="primary"
+              sx={{
+                backgroundColor: "#D4E3F1",
+                marginRight: "8px",
+                "&:hover": {
+                  backgroundColor: "#D4E3F1 !important", // Darker blue on hover
+                },
+              }}
             >
               <Icon>edit</Icon>
             </IconButton>
@@ -145,6 +162,13 @@ export default function CompanyList() {
               onClick={() => handleDelete(params.row._id)}
               aria-label="delete"
               color="error"
+              sx={{
+                backgroundColor: "#FFDADC",
+                marginRight: "8px",
+                "&:hover": {
+                  backgroundColor: "#FFDADC !important", // Darker blue on hover
+                },
+              }}
             >
               <Icon>delete</Icon>
             </IconButton>
@@ -291,7 +315,7 @@ export default function CompanyList() {
           getRowId={(row) => row._id}
           sx={{
             border: "solid 1px rgb(212, 212, 212)",
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
             // This targets the entire header container
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: "#f7f7f7", // Red background for header
@@ -322,6 +346,30 @@ export default function CompanyList() {
             "& .MuiDataGrid-columnHeader:focus-within": {
               outline: "none",
             },
+            // Cell styles
+            "& .MuiDataGrid-cell": {
+              // Remove focus outline
+              "&:focus": {
+                outline: "none",
+              },
+              // Remove border when selected
+              "&.MuiDataGrid-cell--selected": {
+                border: "none",
+              },
+            },
+
+            // Checkbox styles (if you have selection checkboxes)
+            "& .MuiDataGrid-cellCheckbox, & .MuiDataGrid-columnHeaderCheckbox":
+              {
+                "& .MuiButtonBase-root": {
+                  "&.Mui-checked": {
+                    color: "inherit", // Keep original checkbox color
+                  },
+                  "&:hover": {
+                    backgroundColor: "none", // Remove hover background
+                  },
+                },
+              },
           }}
         />
       </Box>
