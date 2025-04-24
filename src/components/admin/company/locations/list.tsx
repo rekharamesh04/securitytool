@@ -55,8 +55,8 @@ export default function LocationList() {
     searchParams.append("limit", paginationModel.pageSize.toString());
 
     if (debouncedSearchText) {
-        searchParams.append("search", debouncedSearchText);
-      }
+      searchParams.append("search", debouncedSearchText);
+    }
 
     if (sortModel?.[0]) {
       searchParams.append("sort", sortModel[0].field);
@@ -290,12 +290,13 @@ export default function LocationList() {
               disableUnderline: true,
               startAdornment: (
                 <InputAdornment position="start">
-                  <GridSearchIcon sx={{ color: "gray" }} />
+                  <GridSearchIcon sx={{ color: "black", fontSize: "20px" }} />
                 </InputAdornment>
               ),
               sx: {
                 fontSize: "1rem",
                 color: "black",
+                fontWeight: "500",
                 fontFamily: "monospace",
               },
             }}
@@ -310,13 +311,13 @@ export default function LocationList() {
           <IconButton
             color="primary"
             sx={{
-              color: "gray",
-              background: "#edf3ff",
+              color: "white",
+              background: "rgb(17, 4, 122)",
               marginLeft: "20px",
               padding: "8px",
               "&:hover": {
-                background: "#edf3ff", // 👈 Keeps the same background on hover
-                color: "gray", // 👈 Prevents color change
+                background: "rgb(17, 4, 122)", // 👈 Keeps the same background on hover
+                color: "white", // 👈 Prevents color change
               },
             }}
             onClick={() => handleAdd()}
@@ -337,6 +338,40 @@ export default function LocationList() {
           onPaginationModelChange={setPaginationModel}
           onSortModelChange={setSortModel}
           getRowId={(row) => row._id}
+          sx={{
+            border: "solid 1px rgb(212, 212, 212)",
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)', // Add box shadow here
+            // This targets the entire header container
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f7f7f7", // Red background for header
+              color: "black", // White text for better contrast
+              fontSize: "14px",
+            },
+            // This targets individual header cells
+            "& .MuiDataGrid-columnHeader": {
+              backgroundColor: "#f7f7f7",
+            },
+            // This targets the header titles
+            "& .MuiDataGrid-columnHeaderTitle": {
+              color: "black",
+              fontWeight: "600",
+            },
+            // This targets the sort icon
+            "& .MuiDataGrid-sortIcon": {
+              color: "black",
+            },
+            // This targets the menu icon
+            "& .MuiDataGrid-menuIcon": {
+              color: "black",
+            },
+            // This targets the column separator
+            "& .MuiDataGrid-columnSeparator": {
+              color: "rgba(224, 224, 224, 1)",
+            },
+            "& .MuiDataGrid-columnHeader:focus-within": {
+              outline: "none",
+            },
+          }}
         />
       </Box>
     </Box>

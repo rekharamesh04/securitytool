@@ -8,10 +8,6 @@ import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import adminNavigation from "./navigation";
 import { NextAppProvider } from "@toolpad/core/nextjs";
-import { GridMenuIcon } from "@mui/x-data-grid";
-import { IconButton } from "@mui/material";
-import useMediaQuery from "@mui/material/useMediaQuery";
-
 interface LayoutProps {
   window?: () => Window;
   children: React.ReactNode;
@@ -22,8 +18,6 @@ export default function AdminLayout(props: LayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   // Remove this const when copying and pasting into your project.
   const demoWindow = window !== undefined ? window() : undefined;
 
@@ -40,11 +34,7 @@ export default function AdminLayout(props: LayoutProps) {
     }
   };
 
-  // const handleDrawerToggle = () => {
-  //     setMobileOpen(!mobileOpen);
-  //   };
-
-  console.log("Current pathname:", pathname);
+  console.log("Current Pathname:", pathname);
 
   return (
     <NextAppProvider
@@ -75,18 +65,33 @@ export default function AdminLayout(props: LayoutProps) {
     >
       <DashboardLayout
         sx={{
+          // Header background styles
+          "& .MuiAppBar-root": {
+            backgroundColor: "#f7f7f7",
+            color: "white",
+            boxShadow: "none",
+            backgroundImage: "none",
+          },
+          "& .MuiDrawer-root": {
+            "& .MuiPaper-root": {
+              backgroundColor: "#f7f7f7",
+              boxSizing: "border-box",
+              transition: "width 0.3s ease, transform 0.3s ease",
+            },
+          },
           "& .Mui-selected": {
             "& *": {
-              color: "white !important", // Force all child elements white
+              color: "white !important",
             },
           },
           "& .MuiListSubheader-root": {
-            fontFamily: "'Inter', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-            color: "#5D87FF",
-            fontSize: "10px",
-            fontWeight: 800,
+            fontFamily:
+              "'Inter', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+            color: "rgb(17, 4, 122)",
+            fontSize: "12px",
+            fontWeight: 700,
             textTransform: "uppercase",
-            letterSpacing: "0.13px",
+            letterSpacing: "0.75px",
             marginTop: "10px",
             pl: "10px",
             lineHeight: 1.5,
@@ -124,17 +129,29 @@ export default function AdminLayout(props: LayoutProps) {
           },
         }}
       >
-        <PageContainer>
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              sx={{ mr: 2, display: { sm: "none" } }}
-            >
-              <GridMenuIcon />
-            </IconButton>
-          )}
+        <PageContainer
+          sx={{
+            color: "rgb(17, 4, 122)",
+            "& .MuiTypography-h4": {
+              // Style for headings above content
+              color: "rgb(17, 4, 122)",
+              fontSize: "2rem",
+              fontWeight: 600,
+              marginBottom: "1rem",
+              fontFamily: "'Inter', sans-serif",
+            },
+            "& .MuiTypography-body1": {
+              // Style for regular text
+              color: "rgba(17, 4, 122, 0.8)",
+              fontSize: "1rem",
+              fontWeight: "600",
+              lineHeight: 1.6,
+            },
+          }}
+        >
+          {/* <IconButton>
+            <GridMenuIcon />
+          </IconButton> */}
           {children}
         </PageContainer>
       </DashboardLayout>

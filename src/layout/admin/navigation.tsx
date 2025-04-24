@@ -18,32 +18,32 @@ const adminNavigation: Navigation = [
     {
         segment: 'admin',
         title: 'Dashboard',
-        icon: <DashboardIcon />,
+        icon: <DashboardIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
     },
     {
         segment: 'admin/company',
         title: 'Companies',
-        icon: <CompanyIcon />,
+        icon: <CompanyIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
         children: [
             {
-                segment: '/',
+                segment: 'company-list',
                 title: 'Company Lists',
-                icon: <ListIcon />,
+                icon: <ListIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
             },
             {
                 segment: 'company-users',
                 title: 'Company Users',
-                icon: <UserIcon />,
+                icon: <UserIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
             },
             {
                 segment: 'locations',
                 title: 'Locations',
-                icon: <LocationIcon />,
+                icon: <LocationIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
             },
             {
                 segment: 'data-source',
                 title: 'Data Source',
-                icon: <StorageIcon />,
+                icon: <StorageIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
             },
         ]
     },
@@ -54,17 +54,17 @@ const adminNavigation: Navigation = [
     {
         segment: 'admin/user/permissions',
         title: 'Permissions',
-        icon: <PermissionIcon />,
+        icon: <PermissionIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
     },
     {
         segment: 'admin/user/roles',
         title: 'Roles',
-        icon: <RoleIcon />,
+        icon: <RoleIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
     },
     {
         segment: 'admin/user/users',
         title: 'Users',
-        icon: <UserIcon />,
+        icon: <UserIcon sx={{fontSize: "1.15rem", marginLeft: "12px"}}/>,
     },
 ];
 

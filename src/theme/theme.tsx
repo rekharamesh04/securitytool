@@ -44,7 +44,7 @@ const themeOptions = {
         },
     },
     typography: {
-        fontFamily: "'Inter', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         h1: {
             fontFamily: "'Playfair Display', serif",
             fontSize: '3.5rem',
@@ -61,14 +61,26 @@ const themeOptions = {
             fontWeight: 600,
         },
         body1: {
-            fontSize: '16px',
-            fontWeight: 400,
+            fontSize: '15px',
+            fontWeight: 500,
             fontStyle: 'normal',
         },
     },
 };
 
 // Create the theme
-const theme = createTheme(themeOptions);
+const theme = createTheme(themeOptions,
+    {
+        transitions: {
+          easing: {
+            easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+          },
+          duration: {
+            leavingScreen: 300,
+            enteringScreen: 300,
+          },
+        },
+      }
+);
 
 export default theme;
