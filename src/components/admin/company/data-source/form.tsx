@@ -177,28 +177,31 @@ export default function DataSourceForm({
     setValue("data", newValue.join(","));
   }}
   renderTags={(value: readonly string[], getTagProps) =>
-    value.map((option: string, index: number) => (
-      <Chip
-        // key={index}
-        label={option}
-        {...getTagProps({ index })}
-        sx={{
-          backgroundColor: "#e3f2fd", // Light blue
-          color: "#0d47a1",            // Dark blue text
-          fontWeight: 500,
-          borderRadius: "8px",
-          paddingX: "4px",
-          margin: "2px",
-          boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
-          "& .MuiChip-deleteIcon": {
+    value.map((option: string, index: number) => {
+      const { key, ...tagProps } = getTagProps({ index });
+      return (
+        <Chip
+          key={key}
+          label={option}
+          {...tagProps}
+          sx={{
+            backgroundColor: "#e3f2fd",
             color: "#0d47a1",
-            ":hover": {
-              color: "#1565c0",
+            fontWeight: 500,
+            borderRadius: "8px",
+            paddingX: "4px",
+            margin: "2px",
+            boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
+            "& .MuiChip-deleteIcon": {
+              color: "#0d47a1",
+              ":hover": {
+                color: "#1565c0",
+              },
             },
-          },
-        }}
-      />
-    ))
+          }}
+        />
+      );
+    })
   }
   renderInput={(params) => (
     <TextField
