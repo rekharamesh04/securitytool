@@ -201,7 +201,7 @@ export default function CompanyList() {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleSetContext(params.row)}
+            onClick={() => {handleSetContext(params.row), console.log(params.row)}}
           >
             Set Context
           </Button>

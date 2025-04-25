@@ -2,7 +2,7 @@
 
 import axiosInstance from '@/utils/axiosInstance';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControlLabel, Icon, IconButton, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControlLabel, Icon, IconButton, Stack, Switch, TextField, Typography } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -44,24 +44,27 @@ export default function DataSourceForm({
   });
 
   // Fetch and prefill data for editing
-  const bindData = useCallback(async (id: any) => {
+  const bindData = useCallback(async (id:any) => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.get(`${fetchUrl}/${id}`);
-      const data = {
-        ...response.data,
-        status: response.data.status,
-      };
-      reset(data);
-      setLoading(false);
+        setLoading(true);
+        const response = await axiosInstance.get(`${fetchUrl}/${id}`);
+        const data = response.data.data;
+
+        reset({
+          ...data,
+          company: data.company, // full company object with _id and name
+        });
+
+        setLoading(false);
     } catch (error: any) {
-      setLoading(false);
-      const { response } = error;
-      if (response && response.status === 403) {
-        router.push("/forbidden");
-      }
+        setLoading(false);
+        const { response } = error
+        if (response && response.status == 403) {
+            router.push("/forbidden")
+        }
     }
-  }, [router, reset]);
+}
+,[router,reset])
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -111,15 +114,6 @@ export default function DataSourceForm({
       </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
-          {/* <TextField
-            label="Company"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.company}
-            helperText={errors.company?.message}
-            {...register('company')}
-          /> */}
 
           <CompanyAutocomplete setValue={setValue} value={company} />
 
@@ -163,7 +157,7 @@ export default function DataSourceForm({
             {...register('sensitive_records')}
           />
 
-          <TextField
+          {/* <TextField
             label="Data"
             fullWidth
             margin="normal"
@@ -171,7 +165,53 @@ export default function DataSourceForm({
             error={!!errors.data}
             helperText={errors.data?.message}
             {...register('data')}
-          />
+          /> */}
+
+<Autocomplete
+  multiple
+  freeSolo
+  options={[]} // No predefined options
+  value={(watch("data") || "").split(",").filter(Boolean)}
+  onChange={(_, newValue) => {
+    // Join values back to string for form state
+    setValue("data", newValue.join(","));
+  }}
+  renderTags={(value: readonly string[], getTagProps) =>
+    value.map((option: string, index: number) => (
+      <Chip
+        // key={index}
+        label={option}
+        {...getTagProps({ index })}
+        sx={{
+          backgroundColor: "#e3f2fd", // Light blue
+          color: "#0d47a1",            // Dark blue text
+          fontWeight: 500,
+          borderRadius: "8px",
+          paddingX: "4px",
+          margin: "2px",
+          boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
+          "& .MuiChip-deleteIcon": {
+            color: "#0d47a1",
+            ":hover": {
+              color: "#1565c0",
+            },
+          },
+        }}
+      />
+    ))
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Data"
+      margin="normal"
+      error={!!errors.data}
+      helperText={errors.data?.message}
+    />
+  )}
+/>
+
+
 
           <FormControlLabel
             control={
