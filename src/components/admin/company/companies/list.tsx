@@ -32,7 +32,6 @@ interface Company {
   // Add other fields if needed
 }
 
-
 export default function CompanyList() {
   const router = useRouter();
   const [paginationModel, setPaginationModel] = useState({
@@ -135,13 +134,15 @@ export default function CompanyList() {
     }
   };
 
-  const handleSetContext = useCallback((company: Company) => {
-    console.log("Set context for:", company);
-    setSelectedCompany(company);
-    notifications.show("Company set successfully!", { severity: "success" });
-    // Do other things if needed
-  }, [setSelectedCompany]);
-
+  const handleSetContext = useCallback(
+    (company: Company) => {
+      console.log("Set context for:", company);
+      setSelectedCompany(company);
+      notifications.show("Company set successfully!", { severity: "success" });
+      // Do other things if needed
+    },
+    [setSelectedCompany]
+  );
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -200,16 +201,26 @@ export default function CompanyList() {
         renderCell: (params) => (
           <Button
             variant="contained"
-            color="secondary"
-            onClick={() => {handleSetContext(params.row)}}
+            onClick={() => handleSetContext(params.row)}
+            sx={{
+              backgroundColor: "#FF8D8D",
+              color: "black",
+              fontSize: "13px",
+              fontWeight: 600,
+              padding: "4px 8px",
+              marginBottom: "5px",
+              textTransform: "lowercase",
+              "&:hover": {
+                backgroundColor: "#FF8D8D !important", // Darker blue on hover
+              },
+            }}
           >
             Set Context
           </Button>
         ),
         sortable: false,
         filterable: false,
-      }
-
+      },
     ],
     [handleEdit, handleDelete]
   );
@@ -235,7 +246,7 @@ export default function CompanyList() {
         alignItems="center"
         height="100vh"
       >
-        <p>Error loading data!</p>
+        <p style={{color: "red"}}>Error loading data!</p>
       </Box>
     );
   }
@@ -381,6 +392,16 @@ export default function CompanyList() {
             "& .MuiDataGrid-columnHeader:focus-within": {
               outline: "none",
             },
+            // Remove row selection highlight
+            "& .MuiDataGrid-row": {
+              "&.Mui-selected": {
+                backgroundColor: "transparent !important",
+                outline: "none",
+                "&:hover": {
+                  backgroundColor: "transparent !important", // Remove hover on selected
+                },
+              },
+            },
             // Cell styles
             "& .MuiDataGrid-cell": {
               // Remove focus outline
@@ -389,6 +410,7 @@ export default function CompanyList() {
               },
               // Remove border when selected
               "&.MuiDataGrid-cell--selected": {
+                backgroundColor: "transparent !important", // Remove cell selection
                 border: "none",
               },
             },
@@ -401,7 +423,7 @@ export default function CompanyList() {
                     color: "inherit", // Keep original checkbox color
                   },
                   "&:hover": {
-                    backgroundColor: "none", // Remove hover background
+                    backgroundColor: "transparent", // Remove hover background
                   },
                 },
               },

@@ -136,8 +136,9 @@ export default function AdminLayout(props: LayoutProps) {
             color: "rgb(30, 14, 145)",
             "& .MuiTypography-h4": {
               // Style for headings above content
-              color: "rgb(30, 14, 145)",
-              fontSize: "2rem",
+              color: "#40413F",
+              fontSize: "1.35rem",
+              fontWeight: "600",
               marginBottom: "1rem",
               fontFamily: "'Inter', sans-serif",
             },

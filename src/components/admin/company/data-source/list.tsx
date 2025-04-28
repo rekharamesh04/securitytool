@@ -14,7 +14,6 @@ import {
   Paper,
   Tooltip,
   Alert,
-  Button,
 } from "@mui/material";
 import {
   DataGrid,
@@ -24,7 +23,7 @@ import {
 } from "@mui/x-data-grid";
 import { useDialogs, useNotifications } from "@toolpad/core";
 // import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { fetchUrl } from "./constant";
 import theme from "@/theme/theme";
@@ -36,6 +35,7 @@ export default function DataSource() {
   const notifications = useNotifications();
 
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -43,15 +43,24 @@ export default function DataSource() {
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const { selectedCompany } = useCompanyContext();
 
-  console.log(selectedCompany?._id)
+  // Debounce search text
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchText]);
 
   const params = useMemo(() => {
     const searchParams = new URLSearchParams();
     searchParams.append("page", (paginationModel.page + 1).toString());
     searchParams.append("limit", paginationModel.pageSize.toString());
 
-    if (searchText) {
-      searchParams.append("search", searchText);
+    if (debouncedSearchText) {
+      searchParams.append("search", debouncedSearchText);
     }
 
     if (sortModel?.[0]) {
@@ -65,21 +74,16 @@ export default function DataSource() {
       searchParams.append("company", selectedCompany._id.toString());
     }
 
-
     return searchParams.toString(); // Return a string to use as a stable key
-  }, [paginationModel, searchText, sortModel]);
+  }, [paginationModel, debouncedSearchText, sortModel]);
 
-  const { data, isLoading } = useSWR(
-    `${fetchUrl}?${params.toString()}`,
-    getFetcher
-  );
-
+  const { data, isLoading } = useSWR(`${fetchUrl}?${params}`, getFetcher);
   const handleAdd = async () => {
     const result = await dialogs.open((props) => (
       <DataSourceForm {...props} id="new" />
     ));
     if (result) {
-      mutate(`${fetchUrl}?${params.toString()}`, { revalidate: true });
+      mutate(`${fetchUrl}?${params}`, { revalidate: true });
     }
   };
 
@@ -88,12 +92,12 @@ export default function DataSource() {
 
     return {
       ...data,
-      data: data.data.filter((item: any) =>
-        item.company._id === selectedCompany._id.toString() // Compare nested _id
+      data: data.data.filter(
+        (item: any) => item.company._id === selectedCompany._id.toString() // Compare nested _id
       ),
-      total: data.data.filter((item: any) =>
-        item.company._id === selectedCompany._id.toString()
-      ).length
+      total: data.data.filter(
+        (item: any) => item.company._id === selectedCompany._id.toString()
+      ).length,
     };
   }, [data, selectedCompany?._id]);
 
@@ -108,7 +112,7 @@ export default function DataSource() {
         try {
           const response = await axiosInstance.delete(`${fetchUrl}/${id}`);
           // Revalidate the data after deleting the category
-          mutate(`${fetchUrl}?${params.toString()}`, { revalidate: true }); //use stable key
+          mutate(`${fetchUrl}?${params}`, { revalidate: true }); //use stable key
 
           const { data } = response;
           notifications.show(data.message, { severity: "success" });
@@ -127,18 +131,17 @@ export default function DataSource() {
         <DataSourceForm {...props} id={id} />
       ));
       if (result) {
-        mutate(`${fetchUrl}?${params.toString()}`, { revalidate: true });
+        mutate(`${fetchUrl}?${params}`, { revalidate: true });
       }
     },
     [dialogs, params]
   );
 
-
   const columns: GridColDef[] = useMemo(
     () => [
       {
         field: "name",
-        headerName: "DATASTORE",
+        headerName: "Datastore",
         flex: 1.2,
         minWidth: 200,
         renderCell: ({ row }) => (
@@ -154,7 +157,7 @@ export default function DataSource() {
       },
       {
         field: "account",
-        headerName: "ACCOUNT",
+        headerName: "Account",
         flex: 1,
         minWidth: 200,
         renderCell: ({ row }) => (
@@ -168,22 +171,30 @@ export default function DataSource() {
       },
       {
         field: "dataSensitivity",
-        headerName: "SENSITIVITY",
+        headerName: "Sensitivity",
         width: 150,
         renderCell: ({ row }) => {
-          const sensitivity = row.sensitivity.toUpperCase() as 'RESTRICTED' | 'MEDIUM' | 'LOW' | 'CRITICAL' | 'NORMAL'; // Type assertion
+          const sensitivity = row.sensitivity.toUpperCase() as
+            | "RESTRICTED"
+            | "MEDIUM"
+            | "LOW"
+            | "CRITICAL"
+            | "NORMAL"; // Type assertion
 
           // Define color mapping for sensitivity types
-          const colorMap: Record<'RESTRICTED' | 'MEDIUM' | 'LOW' | 'CRITICAL' | 'NORMAL', string> = {
-            RESTRICTED: "#d32f2f",    // Red for High Sensitivity
-            MEDIUM: "#ffa000",   // Orange for Medium Sensitivity
-            LOW: "#388e3c",      // Green for Low Sensitivity
+          const colorMap: Record<
+            "RESTRICTED" | "MEDIUM" | "LOW" | "CRITICAL" | "NORMAL",
+            string
+          > = {
+            RESTRICTED: "#d32f2f", // Red for High Sensitivity
+            MEDIUM: "#ffa000", // Orange for Medium Sensitivity
+            LOW: "#388e3c", // Green for Low Sensitivity
             CRITICAL: "#c2185b", // Pink for Critical Sensitivity
-            NORMAL: "#1976d2",   // Blue for Normal Sensitivity
+            NORMAL: "#1976d2", // Blue for Normal Sensitivity
           };
 
           // Get the appropriate color based on sensitivity value
-          const backgroundColor = colorMap[sensitivity] || "#9e9e9e";  // Default grey for unknown sensitivity
+          const backgroundColor = colorMap[sensitivity] || "#9e9e9e"; // Default grey for unknown sensitivity
           const textColor = "#000"; // White text for contrast
 
           return (
@@ -203,98 +214,73 @@ export default function DataSource() {
             />
           );
         },
-      }
-      ,
+      },
       {
         field: "sensitiveRecords",
-        headerName: "SENSITIVE RECORDS",
+        headerName: "Sensitive Records",
         width: 170,
         align: "center",
         headerAlign: "center",
         renderCell: ({ row }) => (
-          <Typography  variant="body2" sx={{ paddingTop: 2 }}>
-            {row.sensitive_records}
-          </Typography>
+          <Typography variant="body2">{row.sensitive_records}</Typography>
         ),
       },
       {
-        field: "data",
-        headerName: "DATA",
-        flex: 1,
-        renderCell: (params) => {
-          const items = params.row.data?.split(',') || [];
-
-          // Color map for known tags
-          const colorMap: Record<string, string> = {
-            PERSONAL: "#3f51b5",    // Indigo
-            FINANCIAL: "#009688",   // Teal
-            HEALTH: "#e91e63",      // Pink
-            LEGAL: "#ff9800",       // Orange
-            INTERNAL: "#607d8b",    // Blue Grey
-          };
-
-          return (
-            <Box
-              display="grid"
-              gridTemplateColumns="repeat(2, max-content)"
-              gap={1}
-              sx={{ paddingTop: 2 }}
-            >
-              {items.map((item: string, index: number) => {
-                const label = item.trim().toUpperCase();
-                const baseColor = colorMap[label] || "#616161";
-
-                return (
-                  <Chip
-                    key={index}
-                    label={label}
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      letterSpacing: 0.5,
-                      borderRadius: "6px",
-                      color: baseColor,
-                      backgroundColor: `${baseColor}20`, // ~12.5% opacity
-                      border: `1px solid ${baseColor}`,
-                      height: "24px",
-                    }}
-                  />
-                );
-              })}
-            </Box>
-          );
-        },
+        field: "dataClass",
+        headerName: "Data",
+        flex: 2,
+        minWidth: 100,
+        renderCell: ({ row }) => (
+          <Box display="flex" gap={1} sx={{ flexWrap: "wrap", maxWidth: 300 }}>
+            {row.dataClasses
+              ?.slice(0, 3)
+              .map((cls: string, index: number) => (
+                <Chip
+                  key={index}
+                  label={cls}
+                  size="small"
+                  variant="outlined"
+                  sx={{ borderRadius: 1 }}
+                />
+              ))}
+            {row.dataClasses?.length > 3 && (
+              <Tooltip title={row.dataClasses.slice(3).join(", ")}>
+                <Chip
+                  label={`+${row.dataClasses.length - 3}`}
+                  size="small"
+                  sx={{ borderRadius: 1 }}
+                />
+              </Tooltip>
+            )}
+          </Box>
+        ),
       },
       {
         field: "scanStatus",
-        headerName: "STATUS",
-        width: 150,
-        renderCell: ({ row }) => {
-          const status = row.scanStatus;
-          const isScanned = status === "Scanned";
-
-          return (
-            <Button
-              variant="contained"
-              color={isScanned ? "success" : "warning"} // Color based on status
-              sx={{
-                minWidth: "100px", // Set a fixed width for consistency
-                fontSize: "0.875rem",
-                textTransform: "none",
-              }}
-              onClick={() => {
-                // You can add custom logic for the button click, like editing the status
-                console.log(`Clicked on status: ${status}`);
-              }}
-            >
-              {status}
-            </Button>
-          );
-        },
+        headerName: "Status",
+        width: 100,
+        renderCell: ({ row }) => (
+          <Chip
+            label={row.scanStatus}
+            size="small"
+            variant="filled"
+            sx={{
+              backgroundColor:
+                row.scanStatus === "Scanned"
+                  ? theme.palette.success.light
+                  : theme.palette.warning.light,
+              color: theme.palette.getContrastText(
+                row.scanStatus === "Scanned"
+                  ? theme.palette.success.light
+                  : theme.palette.warning.light
+              ),
+            }}
+          />
+        ),
       },
       {
         field: "actions",
-        headerName: "ACTIONS",
+        headerName: "Actions",
         width: 120,
         align: "center",
         renderCell: ({ row }) => (
@@ -305,7 +291,11 @@ export default function DataSource() {
               </IconButton>
             </Tooltip>
             <Tooltip title="Delete">
-              <IconButton onClick={() => handleDelete(row._id)} size="small" color="error">
+              <IconButton
+                onClick={() => handleDelete(row._id)}
+                size="small"
+                color="error"
+              >
                 <Icon fontSize="small">delete</Icon>
               </IconButton>
             </Tooltip>
@@ -313,85 +303,101 @@ export default function DataSource() {
         ),
       },
     ],
-    [handleDelete, handleEdit, theme,selectedCompany]
+    [handleDelete, handleEdit, theme, selectedCompany]
   );
 
-  if (!selectedCompany) return  <Alert severity="warning">
-  Please Set Company Context
-</Alert>;
+  if (!selectedCompany)
+    return <Alert severity="warning">Please Set Company Context</Alert>;
 
   return (
     <Box pt={0} pb={0} px={3}>
-       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-      <Typography sx={{ fontSize: '1.5rem !important', flexGrow: 1,lineHeight: 1 }}>Company: {selectedCompany?.name}</Typography>
-
       <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-end", // 🔥 aligns inner Box to the end (right)
+          justifyContent: "space-between",
+          alignItems: "center",
           mb: 2,
         }}
       >
+        <Typography
+          sx={{
+            fontSize: "1.35rem !important",
+            color: "#30312F !important",
+            fontWeight: "600 !important",
+            position: "relative",
+            top: "2.5rem",
+          }}
+        >
+          Company: {selectedCompany?.name}
+        </Typography>
+
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
-            backgroundColor: "#FFFFFF",
-            borderRadius: "999px",
-            padding: "10px 15px",
-            width: 350,
-            boxShadow: `
-                                  rgba(100, 134, 169, 0.18) 24px 17px 40px 4px,
-                                  rgba(100, 134, 169, 0.15) -12px -10px 30px 2px  `,
-            marginBottom: "10px",
+            justifyContent: "flex-end", // 🔥 aligns inner Box to the end (right)
+            mb: 2,
           }}
         >
-          <TextField
-            placeholder="Search..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            variant="standard"
-            fullWidth
-            InputProps={{
-              disableUnderline: true,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <GridSearchIcon sx={{ color: "black", fontSize: "20px" }} />
-                </InputAdornment>
-              ),
-              sx: {
-                fontSize: "1rem",
-                color: "black",
-                fontWeight: "500",
-                fontFamily: "monospace",
-              },
-            }}
+          <Box
             sx={{
-              background: "#edf3ff",
-              borderRadius: "30px",
-              padding: "3px 30px 3px 10px",
-              maxWidth: "100%",
+              display: "flex",
+              alignItems: "center",
+              backgroundColor: "#FFFFFF",
+              borderRadius: "999px",
+              padding: "10px 15px",
+              width: 350,
+              boxShadow: `
+                                  rgba(100, 134, 169, 0.18) 24px 17px 40px 4px,
+                                  rgba(100, 134, 169, 0.15) -12px -10px 30px 2px  `,
+              marginBottom: "10px",
             }}
-          />
-
-          <IconButton
-            color="primary"
-            sx={{
-              color: "white",
-              background: "rgb(17, 4, 122)",
-              marginLeft: "20px",
-              padding: "8px",
-              "&:hover": {
-                background: "rgb(17, 4, 122)",
-                color: "white", // 👈 Prevents color change
-              },
-            }}
-            onClick={() => handleAdd()}
           >
-            <Icon>add</Icon>
-          </IconButton>
+            <TextField
+              placeholder="Search..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              variant="standard"
+              fullWidth
+              InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <GridSearchIcon sx={{ color: "black", fontSize: "20px" }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  fontSize: "1rem",
+                  color: "black",
+                  fontWeight: "500",
+                  fontFamily: "monospace",
+                },
+              }}
+              sx={{
+                background: "#edf3ff",
+                borderRadius: "30px",
+                padding: "3px 30px 3px 10px",
+                maxWidth: "100%",
+              }}
+            />
+
+            <IconButton
+              color="primary"
+              sx={{
+                color: "white",
+                background: "rgb(17, 4, 122)",
+                marginLeft: "20px",
+                padding: "8px",
+                "&:hover": {
+                  background: "rgb(17, 4, 122)",
+                  color: "white", // 👈 Prevents color change
+                },
+              }}
+              onClick={() => handleAdd()}
+            >
+              <Icon>add</Icon>
+            </IconButton>
+          </Box>
         </Box>
-      </Box>
       </Box>
 
       <Paper
@@ -414,7 +420,7 @@ export default function DataSource() {
             getRowId={(row) => row._id}
             sx={{
               border: "solid 1px rgb(212, 212, 212)",
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
               // This targets the entire header container
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#f7f7f7", // Red background for header
