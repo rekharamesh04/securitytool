@@ -11,7 +11,6 @@ import {
   Checkbox,
   CircularProgress,
   FormControlLabel,
-  Grid2,
   IconButton,
   InputAdornment,
   Link,
@@ -30,6 +29,7 @@ type FormData = {
 
 export default function SignIn() {
   const { login } = useCompanyAuth();
+  // const theme = useTheme();
   const {
     register,
     handleSubmit,
@@ -42,7 +42,6 @@ export default function SignIn() {
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
-      // console.log("Form Data:", data);
       await login(data);
       notifications.show("Sign-in Successful", { severity: "success" });
     } catch (error: any) {
@@ -61,228 +60,239 @@ export default function SignIn() {
       component="form"
       onSubmit={handleSubmit(onSubmit)}
       sx={{
-        position: "relative",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 2,
+        backgroundImage: `
+          linear-gradient(rgba(70, 39, 139, 0.9), rgba(25, 18, 75, 0.9)),
+          url('https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-4.0.3&auto=format&fit=crop&w=2232&q=80')
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
         "&:before": {
           content: '""',
-          background: "radial-gradient(#d2f1df, #d3d7fa, #bad8f4)",
-          backgroundSize: "400% 400%",
-          animation: "gradient 15s ease infinite",
-          position: "absolute",
-          height: "100%",
-          width: "100%",
-          opacity: "0.3",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 90%)",
+          zIndex: 0,
         },
       }}
     >
-      <Grid2
-        container
-        spacing={0}
-        justifyContent="center"
-        sx={{ height: "100vh" }}
+      <Card
+        elevation={10}
+        sx={{
+          width: "100%",
+          maxWidth: "450px",
+          borderRadius: "16px",
+          overflow: "hidden",
+          boxShadow: "0 15px 30px rgba(0,0,0,0.3)",
+          position: "relative",
+          zIndex: 1,
+          background: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(255, 255, 255, 0.4)",
+        }}
       >
-        <Grid2
-          size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 6 }}
+        <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            background: "linear-gradient(to right, #6a11cb 0%, #2575fc 100%)",
+            padding: "20px 0",
+            textAlign: "center",
+            color: "white",
           }}
         >
-          <Card
-            elevation={9}
+          <Typography
+            variant="h4"
+            component="h1"
             sx={{
-              p: 4,
-              zIndex: 1,
-              width: "100%",
-              maxWidth: "500px",
-              borderRadius: "15px",
+              fontWeight: 700,
+              fontSize: "1.75rem",
+              fontFamily: "'Poppins', sans-serif",
+              textShadow: "0 2px 4px rgba(0,0,0,0.2)",
             }}
           >
-            {/* Rest of your card content remains exactly the same */}
-            <Box textAlign="center">
-              <Typography
-                variant="h4"
-                component="h1"
-                gutterBottom
-                sx={{
-                  fontWeight: 600,
-                  color: "rgb(103, 58, 183)",
-                  fontSize: "1.25rem",
-                  fontFamily: "Roboto, sans-serif",
-                  lineHeight: 1.167,
-                }}
-              >
-                Sign In
-              </Typography>
-              <Typography variant="body1" sx={{ color: "#60625F" }}>
-                Enter your credentials
-              </Typography>
-            </Box>
+            Welcome Back
+          </Typography>
+          <Typography variant="subtitle1" sx={{ opacity: 0.9, mt: 1 }}>
+            Sign in to continue
+          </Typography>
+        </Box>
 
-            <CardContent>
-              <TextField
-                fullWidth
-                label="Email"
-                variant="outlined"
-                margin="normal"
-                {...register("email", {
-                  required: {
-                    value: true,
-                    message: "Email is required",
-                  },
-                })}
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: "#6a1b9a", // Purple label
-                    "&.Mui-focused": {
-                      color: "rgb(33, 150, 243)", // Blue when focused
-                    },
-                    "&.Mui-error": {
-                      color: "#d32f2f", // Red when error
-                    },
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "rgba(0, 0, 0, 0.23)", // Light black border
-                      borderWidth: 1,
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#000000", // Black on hover
-                      borderWidth: 1,
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "rgb(33, 150, 243)", // Blue when focused
-                      borderWidth: 2,
-                    },
-                    "&.Mui-error fieldset": {
-                      borderColor: "#d32f2f", // Red when error
-                      borderWidth: 1,
-                    },
-                  },
-                  "& .MuiFormHelperText-root": {
-                    color: "#f44336", // Light red error message
-                    fontWeight: "normal", // Not bold
-                    fontSize: "0.75rem",
-                    marginLeft: 0,
-                  },
-                }}
-              />
+        <CardContent sx={{ padding: "30px" }}>
+          <TextField
+            fullWidth
+            label="Email"
+            variant="outlined"
+            margin="normal"
+            {...register("email", { required: "Email is required" })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            sx={{
+              mb: 3,
+              "& .MuiInputLabel-root": {
+                color: "#6a11cb",
+                "&.Mui-focused": {
+                  color: "#2575fc",
+                },
+              },
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                "& fieldset": {
+                  borderColor: "#C1C3C0",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#6a11cb",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#2575fc",
+                  borderWidth: "2px",
+                },
+                "& .MuiInputBase-input": { 
+                  color: "#2575fc",
+                },
+              },
+            }}
+            InputProps={{
+              style: {
+                fontSize: "16px",
+              },
+            }}
+          />
 
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                variant="outlined"
-                margin="normal"
-                {...register("password", {
-                  required: {
-                    value: true,
-                    message: "Password is required",
-                  },
-                })}
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: "#6a1b9a", // Purple label
-                    "&.Mui-focused": {
-                      color: "rgb(33, 150, 243)", // Blue when focused
-                    },
-                    "&.Mui-error": {
-                      color: "#d32f2f", // Red when error
-                    },
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "rgba(0, 0, 0, 0.23)", // Light black border
-                      borderWidth: 1,
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#000000", // Black on hover
-                      borderWidth: 1,
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "rgb(33, 150, 243)", // Blue when focused
-                      borderWidth: 2,
-                    },
-                    "&.Mui-error fieldset": {
-                      borderColor: "#d32f2f", // Red when error
-                      borderWidth: 1,
-                    },
-                  },
-                  "& .MuiFormHelperText-root": {
-                    color: "#f44336", // Light red error message
-                    fontWeight: "normal", // Not bold
-                    fontSize: "0.75rem",
-                    marginLeft: 0,
-                  },
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={togglePasswordVisibility}
-                        edge="end"
-                        sx={{ color: "#6a1b9a" }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+          <TextField
+            fullWidth
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            margin="normal"
+            {...register("password", { required: "Password is required" })}
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": {
+                color: "#6a11cb",
+                "&.Mui-focused": {
+                  color: "#2575fc",
+                },
+              },
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                "& fieldset": {
+                  borderColor: "#C1C3C0",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#6a11cb",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#2575fc",
+                  borderWidth: "2px",
+                },
+                "& .MuiInputBase-input": { 
+                  color: "#2575fc",
+                },
+              },
+            }}
+            InputProps={{
+              style: {
+                fontSize: "16px",
+              },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={togglePasswordVisibility}
+                    edge="end"
+                    sx={{ color: "#6a11cb" }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mt: 2,
-                }}
-              >
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      {...register("rememberMe")}
-                      sx={{
-                        color: "#6a1b9a", // Purple color for checkbox
-                        "&.Mui-checked": {
-                          color: "#6a1b9a", // Purple color when checked
-                        },
-                      }}
-                    />
-                  }
-                  label="Remember Me"
-                  sx={{ color: "black" }}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mt: 1,
+              mb: 2,
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  {...register("rememberMe")}
+                  sx={{
+                    color: "#6a11cb",
+                    "&.Mui-checked": {
+                      color: "#2575fc",
+                    },
+                  }}
                 />
-                <Link
-                  href="/admin/auth/forgot-password"
-                  underline="hover"
-                  variant="body2"
-                  fontWeight="600"
-                  sx={{ color: "rgb(103, 58, 183)" }}
-                >
-                  Forgot Password?
-                </Link>
-              </Box>
-            </CardContent>
+              }
+              label={
+                <Typography variant="body2" sx={{ color: "#555" }}>
+                  Remember Me
+                </Typography>
+              }
+            />
+            <Link
+              href="/admin/auth/forgot-password"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: "#2575fc",
+                fontWeight: 600,
+                "&:hover": {
+                  color: "#6a11cb",
+                },
+              }}
+            >
+              Forgot Password?
+            </Link>
+          </Box>
+        </CardContent>
 
-            <CardActions>
-              <Button
-                disabled={loading}
-                type="submit"
-                variant="contained"
-                fullWidth
-                sx={{ mt: 3, background: "rgb(103, 58, 183)" }}
-              >
-                {loading && <CircularProgress size={15} />}&nbsp; Sign In
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid2>
-      </Grid2>
+        <CardActions sx={{ padding: "0 30px 30px" }}>
+          <Button
+            disabled={loading}
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{
+              height: "48px",
+              borderRadius: "8px",
+              background: "linear-gradient(to right, #6a11cb 0%, #2575fc 100%)",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              textTransform: "none",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: "white",
+              "&:hover": {
+                background: "linear-gradient(to right, #5a0cb0 0%, #1a65e0 100%)",
+                boxShadow: "0 6px 8px rgba(0,0,0,0.15)",
+              },
+              "&:disabled": {
+                background: "#ccc",
+              },
+            }}
+          >
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: "white" }} />
+            ) : (
+              "Sign In"
+            )}
+          </Button>
+        </CardActions>
+      </Card>
     </Box>
   );
 }
