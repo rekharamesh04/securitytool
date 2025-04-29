@@ -14,10 +14,16 @@ import {
   Paper,
   Tooltip,
   Alert,
+  Button,
+  Menu,
+  MenuItem,
+  Badge,
+  Stack,
 } from "@mui/material";
 import {
   DataGrid,
   GridColDef,
+  GridRowSelectionModel,
   GridSearchIcon,
   GridSortModel,
 } from "@mui/x-data-grid";
@@ -29,6 +35,10 @@ import { fetchUrl } from "./constant";
 import theme from "@/theme/theme";
 import DataSourceForm from "./form";
 import { useCompanyContext } from "@/contexts/CompanyContext";
+import { useRouter } from "next/navigation";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 export default function DataSource() {
   const dialogs = useDialogs();
@@ -42,6 +52,87 @@ export default function DataSource() {
   });
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const { selectedCompany } = useCompanyContext();
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([]);
+
+  const router = useRouter();
+
+  const [cloudProvider, setCloudProvider] = useState<string>("AWS");
+  const [infrastructure, setInfrastructure] = useState<string>("");
+  const [account, setAccount] = useState<string>("");
+  const [scanStatus, setScanStatus] = useState<string>("");
+  const [dataClass, setDataClass] = useState<string>("");
+  const [identityName, setIdentityName] = useState<string>("");
+  const [trustLevel, setTrustLevel] = useState<string>("");
+
+  // Menu anchor states
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [currentFilter, setCurrentFilter] = useState<string>("");
+
+  const handleFilterClick = (
+    event: React.MouseEvent<HTMLElement>,
+    filterName: string
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentFilter(filterName);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFilterSelect = (value: string) => {
+    switch (currentFilter) {
+      case "Cloud Provider":
+        setCloudProvider(value);
+        break;
+      case "Infrastructure":
+        setInfrastructure(value);
+        break;
+      case "Account":
+        setAccount(value);
+        break;
+      case "Scan Status":
+        setScanStatus(value);
+        break;
+      case "Data Class":
+        setDataClass(value);
+        break;
+      case "Identity Name":
+        setIdentityName(value);
+        break;
+      case "Trust Level":
+        setTrustLevel(value);
+        break;
+    }
+    handleFilterClose();
+  };
+
+  const handleClearFilter = (filterName: string) => {
+    switch (filterName) {
+      case "Cloud Provider":
+        setCloudProvider("");
+        break;
+      case "Infrastructure":
+        setInfrastructure("");
+        break;
+      case "Account":
+        setAccount("");
+        break;
+      case "Scan Status":
+        setScanStatus("");
+        break;
+      case "Data Class":
+        setDataClass("");
+        break;
+      case "Identity Name":
+        setIdentityName("");
+        break;
+      case "Trust Level":
+        setTrustLevel("");
+        break;
+    }
+  };
 
   // Debounce search text
   useEffect(() => {
@@ -74,8 +165,30 @@ export default function DataSource() {
       searchParams.append("company", selectedCompany._id.toString());
     }
 
-    return searchParams.toString(); // Return a string to use as a stable key
-  }, [paginationModel, debouncedSearchText, sortModel]);
+    // Add filter parameters
+    if (cloudProvider) searchParams.append("cloudProvider", cloudProvider);
+    if (infrastructure) searchParams.append("infrastructure", infrastructure);
+    if (account) searchParams.append("account", account);
+    if (scanStatus) searchParams.append("scanStatus", scanStatus);
+    if (dataClass) searchParams.append("dataClass", dataClass);
+    if (identityName) searchParams.append("identityName", identityName);
+    if (trustLevel) searchParams.append("trustLevel", trustLevel);
+
+    return searchParams.toString();
+  }, [
+    paginationModel,
+    searchText,
+    sortModel,
+    selectedCompany?._id,
+    cloudProvider,
+    infrastructure,
+    account,
+    scanStatus,
+    dataClass,
+    identityName,
+    trustLevel,
+    debouncedSearchText,
+  ]);
 
   const { data, isLoading } = useSWR(`${fetchUrl}?${params}`, getFetcher);
   const handleAdd = async () => {
@@ -226,85 +339,164 @@ export default function DataSource() {
         ),
       },
       {
-        field: "dataClass",
-        headerName: "Data",
-        flex: 2,
-        minWidth: 100,
-        renderCell: ({ row }) => (
-          <Box display="flex" gap={1} sx={{ flexWrap: "wrap", maxWidth: 300 }}>
-            {row.dataClasses
-              ?.slice(0, 3)
-              .map((cls: string, index: number) => (
-                <Chip
-                  key={index}
-                  label={cls}
-                  size="small"
-                  variant="outlined"
-                  sx={{ borderRadius: 1 }}
-                />
-              ))}
-            {row.dataClasses?.length > 3 && (
-              <Tooltip title={row.dataClasses.slice(3).join(", ")}>
-                <Chip
-                  label={`+${row.dataClasses.length - 3}`}
-                  size="small"
-                  sx={{ borderRadius: 1 }}
-                />
-              </Tooltip>
-            )}
-          </Box>
-        ),
+        field: "data",
+        headerName: "DATA",
+        flex: 1,
+        renderCell: (params) => {
+          const items = params.row.data?.split(",") || [];
+
+          // Color map for known tags
+          const colorMap: Record<string, string> = {
+            PERSONAL: "#3f51b5", // Indigo
+            FINANCIAL: "#009688", // Teal
+            HEALTH: "#e91e63", // Pink
+            LEGAL: "#ff9800", // Orange
+            INTERNAL: "#607d8b", // Blue Grey
+          };
+
+          return (
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(2, max-content)"
+              gap={1}
+              sx={{ paddingTop: 2 }}
+            >
+              {items.map((item: string, index: number) => {
+                const label = item.trim().toUpperCase();
+                const baseColor = colorMap[label] || "#616161";
+
+                return (
+                  <Chip
+                    key={index}
+                    label={label}
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
+                      letterSpacing: 0.5,
+                      borderRadius: "6px",
+                      color: baseColor,
+                      backgroundColor: `${baseColor}20`, // ~12.5% opacity
+                      border: `1px solid ${baseColor}`,
+                      height: "24px",
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          );
+        },
       },
+
       {
         field: "scanStatus",
-        headerName: "Status",
-        width: 100,
-        renderCell: ({ row }) => (
-          <Chip
-            label={row.scanStatus}
-            size="small"
-            variant="filled"
-            sx={{
-              backgroundColor:
-                row.scanStatus === "Scanned"
-                  ? theme.palette.success.light
-                  : theme.palette.warning.light,
-              color: theme.palette.getContrastText(
-                row.scanStatus === "Scanned"
-                  ? theme.palette.success.light
-                  : theme.palette.warning.light
-              ),
-            }}
-          />
-        ),
+        headerName: "SCAN STATUS",
+        width: 150,
+        renderCell: ({ row }) => {
+          const status = row.scanStatus;
+          const isScanned = status === "Scanned";
+
+          return (
+            <Button
+              variant="contained"
+              color={isScanned ? "success" : "warning"} // Keep green/yellow color based on status
+              sx={{
+                minWidth: "50px",
+                fontSize: "0.875rem",
+                textTransform: "none",
+              }}
+              onClick={() => {
+                console.log(`Clicked on status: ${status}`);
+              }}
+            >
+              Scan {/* Always show "Scan" */}
+            </Button>
+          );
+        },
       },
-      {
-        field: "actions",
-        headerName: "Actions",
-        width: 120,
-        align: "center",
-        renderCell: ({ row }) => (
-          <Box display="flex" gap={0.5} sx={{ paddingTop: 2 }}>
-            <Tooltip title="Edit">
-              <IconButton onClick={() => handleEdit(row._id)} size="small">
-                <Icon fontSize="small">edit</Icon>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton
-                onClick={() => handleDelete(row._id)}
-                size="small"
-                color="error"
-              >
-                <Icon fontSize="small">delete</Icon>
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
-      },
+      // {
+      //   field: "actions",
+      //   headerName: "Actions",
+      //   width: 120,
+      //   align: "center",
+      //   renderCell: ({ row }) => (
+      //     <Box display="flex" gap={0.5} sx={{ paddingTop: 2 }}>
+      //       <Tooltip title="Edit">
+      //         <IconButton onClick={() => handleEdit(row._id)} size="small">
+      //           <Icon fontSize="small">edit</Icon>
+      //         </IconButton>
+      //       </Tooltip>
+      //       <Tooltip title="Delete">
+      //         <IconButton
+      //           onClick={() => handleDelete(row._id)}
+      //           size="small"
+      //           color="error"
+      //         >
+      //           <Icon fontSize="small">delete</Icon>
+      //         </IconButton>
+      //       </Tooltip>
+      //     </Box>
+      //   ),
+      // },
     ],
     [handleDelete, handleEdit, theme, selectedCompany]
   );
+
+  const handleViewDetails = () => {
+    router.push("/admin/company/data-source/details");
+  };
+  // Filter chip data
+  const activeFilters = [
+    { name: "Cloud Provider", value: cloudProvider },
+    { name: "Infrastructure", value: infrastructure },
+    { name: "Account", value: account },
+    { name: "Scan Status", value: scanStatus },
+    { name: "Data Class", value: dataClass },
+    { name: "Identity Name", value: identityName },
+    { name: "Trust Level", value: trustLevel },
+  ].filter((filter) => filter.value);
+
+  const filterCount = activeFilters.length;
+
+  // Options for each filter (you can replace with your actual options)
+  const filterOptions: Record<string, string[]> = {
+    "Cloud Provider": ["AWS", "Azure", "GCP", "Alibaba Cloud"],
+    Infrastructure: ["Production", "Development", "Staging", "Test"],
+    Account: ["Account 1", "Account 2", "Account 3"],
+    "Scan Status": ["Scanned", "Not Scanned", "In Progress", "Failed"],
+    "Data Class": ["PII", "Financial", "Health", "Legal"],
+    "Identity Name": ["User 1", "User 2", "Service Account"],
+    "Trust Level": ["High", "Medium", "Low"],
+  };
+
+  const renderFilterMenu = () => (
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={handleFilterClose}
+      PaperProps={{
+        style: {
+          maxHeight: 300,
+          width: "20ch",
+        },
+      }}
+    >
+      {filterOptions[currentFilter]?.map((option) => (
+        <MenuItem key={option} onClick={() => handleFilterSelect(option)}>
+          {option}
+        </MenuItem>
+      ))}
+    </Menu>
+  );
+
+  const handleClearAllFilters = () => {
+    setCloudProvider("");
+    setInfrastructure("");
+    setAccount("");
+    setScanStatus("");
+    setDataClass("");
+    setIdentityName("");
+    setTrustLevel("");
+  };
 
   if (!selectedCompany)
     return <Alert severity="warning">Please Set Company Context</Alert>;
@@ -319,7 +511,7 @@ export default function DataSource() {
           mb: 2,
         }}
       >
-        <Typography
+        {/* <Typography
           sx={{
             fontSize: "1.35rem !important",
             color: "#30312F !important",
@@ -329,7 +521,7 @@ export default function DataSource() {
           }}
         >
           Company: {selectedCompany?.name}
-        </Typography>
+        </Typography> */}
 
         <Box
           sx={{
@@ -402,9 +594,107 @@ export default function DataSource() {
 
       <Paper
         sx={{
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-          overflow: "hidden",
+          p: 1.5,
+          mb: 3,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 1,
+          alignItems: "center",
+          borderRadius: "8px",
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+          border: "1px solid",
+          borderColor: "divider",
         }}
+      >
+        <Badge badgeContent={filterCount} color="primary" sx={{ mr: 1 }}>
+          <FilterAltIcon color="action" />
+        </Badge>
+
+        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", rowGap: 1 }}>
+          {/* Filter buttons with dropdown indicators */}
+          {[
+            "Cloud Provider",
+            "Infrastructure",
+            "Account",
+            "Scan Status",
+            "Data Class",
+            "Identity Name",
+            "Trust Level",
+          ].map((filter) => (
+            <Button
+              key={filter}
+              variant="outlined"
+              size="small"
+              onClick={(e) => handleFilterClick(e, filter)}
+              endIcon={<ArrowDropDownIcon />}
+              sx={{
+                textTransform: "none",
+                borderColor: "divider",
+                color: "text.primary",
+                "&:hover": {
+                  borderColor: "primary.main",
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              {filter}
+            </Button>
+          ))}
+
+          {filterCount > 0 && (
+            <Button
+              variant="text"
+              size="small"
+              startIcon={<FilterAltOffIcon fontSize="small" />}
+              onClick={handleClearAllFilters}
+              sx={{
+                textTransform: "none",
+                color: "text.secondary",
+                ml: 1,
+                "&:hover": {
+                  color: "error.main",
+                },
+              }}
+            >
+              Clear all
+            </Button>
+          )}
+        </Stack>
+
+        {/* Active filter chips - shown in a separate row when space is limited */}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            mt: filterCount > 0 ? 1 : 0,
+            width: "100%",
+          }}
+        >
+          {activeFilters.map((filter) => (
+            <Chip
+              key={filter.name}
+              label={`${filter.name}: ${filter.value}`}
+              onDelete={() => handleClearFilter(filter.name)}
+              sx={{
+                borderRadius: "16px",
+                backgroundColor: "action.selected",
+                "& .MuiChip-deleteIcon": {
+                  color: "text.secondary",
+                  "&:hover": {
+                    color: "error.main",
+                  },
+                },
+              }}
+            />
+          ))}
+        </Box>
+
+        {renderFilterMenu()}
+      </Paper>
+
+      <Paper
+        sx={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)", overflow: "hidden" }}
       >
         <Box sx={{ height: 600, width: "100%" }}>
           <DataGrid
@@ -412,6 +702,13 @@ export default function DataSource() {
             columns={columns}
             rowCount={filteredData?.total || 0}
             loading={isLoading}
+            // ← here’s the checkbox column
+            checkboxSelection
+            rowSelectionModel={rowSelectionModel}
+            onRowSelectionModelChange={(newModel) =>
+              setRowSelectionModel(newModel)
+            }
+            onRowClick={() => handleViewDetails()}
             paginationMode="server"
             sortingMode="server"
             paginationModel={paginationModel}
@@ -419,37 +716,22 @@ export default function DataSource() {
             onSortModelChange={setSortModel}
             getRowId={(row) => row._id}
             sx={{
-              border: "solid 1px rgb(212, 212, 212)",
-              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-              // This targets the entire header container
+              border: "1px solid rgb(212,212,212)",
+              boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f7f7f7", // Red background for header
-                color: "black", // White text for better contrast
+                backgroundColor: "#f7f7f7",
+                color: "black",
                 fontSize: "14px",
               },
-              // This targets individual header cells
-              "& .MuiDataGrid-columnHeader": {
-                backgroundColor: "#f7f7f7",
-              },
-              // This targets the header titles
               "& .MuiDataGrid-columnHeaderTitle": {
                 color: "black",
-                fontWeight: "600",
+                fontWeight: 600,
               },
-              // This targets the sort icon
-              "& .MuiDataGrid-sortIcon": {
-                color: "black",
-              },
-              // This targets the menu icon
-              "& .MuiDataGrid-menuIcon": {
-                color: "black",
-              },
-              // This targets the column separator
-              "& .MuiDataGrid-columnSeparator": {
-                color: "rgba(224, 224, 224, 1)",
-              },
-              "& .MuiDataGrid-columnHeader:focus-within": {
-                outline: "none",
+              "& .MuiCheckbox-root": {
+                color: "#9e9e9e", // gray when unchecked
+                "&.Mui-checked": {
+                  color: "#1976d2", // gray when checked
+                },
               },
             }}
             slots={{
