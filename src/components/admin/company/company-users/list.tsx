@@ -24,6 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { fetchUrl } from "./constant";
 import CompanyUserForm from "./form";
+import { alpha } from "@mui/system";
 
 export default function CompanyUserList() {
   const router = useRouter();
@@ -150,13 +151,13 @@ export default function CompanyUserList() {
               onClick={() => handleEdit(params.row._id)}
               aria-label="edit"
               color="primary"
-              sx={{
-                backgroundColor: "#D4E3F1",
+              sx={(theme) => ({
+                backgroundColor: alpha(theme.palette.primary.light, 0.2),
                 marginRight: "8px",
                 "&:hover": {
-                  backgroundColor: "#D4E3F1 !important", // Darker blue on hover
+                  backgroundColor: `${alpha(theme.palette.primary.light, 0.3)} !important`,
                 },
-              }}
+              })}
             >
               <Icon>edit</Icon>
             </IconButton>
@@ -164,13 +165,13 @@ export default function CompanyUserList() {
               onClick={() => handleDelete(params.row._id)}
               aria-label="delete"
               color="error"
-              sx={{
-                backgroundColor: "#FFDADC",
+              sx={(theme) => ({
+                backgroundColor: alpha(theme.palette.error.light, 0.2),
                 marginRight: "8px",
                 "&:hover": {
-                  backgroundColor: "#FFDADC !important", // Darker blue on hover
+                  backgroundColor: `${alpha(theme.palette.error.light, 0.3)} !important`,
                 },
-              }}
+              })}
             >
               <Icon>delete</Icon>
             </IconButton>
@@ -202,7 +203,7 @@ export default function CompanyUserList() {
         alignItems="center"
         height="100vh"
       >
-        <p>Error loading data!</p>
+        <p style={{ color: "error.main" }}>Error loading data!</p>
       </Box>
     );
   }
@@ -236,26 +237,24 @@ export default function CompanyUserList() {
         </IconButton>
       </Box> */}
 
-      <Box
+            <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-end", // 🔥 aligns inner Box to the end (right)
+          justifyContent: "flex-end",
           mb: 2,
         }}
       >
         <Box
-          sx={{
+          sx={(theme) => ({
             display: "flex",
             alignItems: "center",
-            backgroundColor: "#FFFFFF",
+            backgroundColor: theme.palette.background.paper,
             borderRadius: "999px",
             padding: "10px 15px",
             width: 350,
-            boxShadow: `
-                          rgba(100, 134, 169, 0.18) 24px 17px 40px 4px,
-                          rgba(100, 134, 169, 0.15) -12px -10px 30px 2px  `,
+            boxShadow: theme.shadows[3],
             marginBottom: "10px",
-          }}
+          })}
         >
           <TextField
             placeholder="Search..."
@@ -267,36 +266,38 @@ export default function CompanyUserList() {
               disableUnderline: true,
               startAdornment: (
                 <InputAdornment position="start">
-                  <GridSearchIcon sx={{ color: "black", fontSize: "20px" }} />
+                  <GridSearchIcon sx={(theme) => ({ 
+                    color: theme.palette.text.primary,
+                    fontSize: "20px" 
+                  })} />
                 </InputAdornment>
               ),
-              sx: {
+              sx: (theme) => ({
                 fontSize: "1rem",
-                color: "black",
+                color: theme.palette.text.primary,
                 fontWeight: "500",
                 fontFamily: "monospace",
-              },
+              }),
             }}
-            sx={{
-              background: "#edf3ff",
+            sx={(theme) => ({
+              background: alpha(theme.palette.primary.light, 0.1),
               borderRadius: "30px",
               padding: "3px 30px 3px 10px",
               maxWidth: "100%",
-            }}
+            })}
           />
 
           <IconButton
             color="primary"
-            sx={{
-              color: "white",
-              background: "rgb(17, 4, 122)",
+            sx={(theme) => ({
+              color: theme.palette.primary.contrastText,
+              background: theme.palette.primary.main,
               marginLeft: "20px",
               padding: "8px",
               "&:hover": {
-                background: "rgb(17, 4, 122)", // 👈 Keeps the same background on hover
-                color: "white", // 👈 Prevents color change
+                background: theme.palette.primary.dark,
               },
-            }}
+            })}
             onClick={() => handleAdd()}
           >
             <Icon>add</Icon>
@@ -315,40 +316,34 @@ export default function CompanyUserList() {
           onPaginationModelChange={setPaginationModel}
           onSortModelChange={setSortModel}
           getRowId={(row) => row._id}
-          sx={{
-            border: "solid 1px rgb(212, 212, 212)",
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-            // This targets the entire header container
+          sx={(theme) => ({
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: theme.shadows[1],
             "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f7f7f7", // Red background for header
-              color: "black", // White text for better contrast
+              backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
+              color: theme.palette.text.primary,
               fontSize: "14px",
             },
-            // This targets individual header cells
             "& .MuiDataGrid-columnHeader": {
-              backgroundColor: "#f7f7f7",
+              backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
             },
-            // This targets the header titles
             "& .MuiDataGrid-columnHeaderTitle": {
-              color: "black",
+              color: theme.palette.text.primary,
               fontWeight: "600",
             },
-            // This targets the sort icon
             "& .MuiDataGrid-sortIcon": {
-              color: "black",
+              color: theme.palette.text.primary,
             },
-            // This targets the menu icon
             "& .MuiDataGrid-menuIcon": {
-              color: "black",
+              color: theme.palette.text.primary,
             },
-            // This targets the column separator
             "& .MuiDataGrid-columnSeparator": {
-              color: "rgba(224, 224, 224, 1)",
+              color: theme.palette.divider,
             },
             "& .MuiDataGrid-columnHeader:focus-within": {
               outline: "none",
             },
-          }}
+          })}
         />
       </Box>
     </Box>

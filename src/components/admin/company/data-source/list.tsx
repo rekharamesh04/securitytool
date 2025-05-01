@@ -12,7 +12,6 @@ import {
   TextField,
   Typography,
   Paper,
-  Tooltip,
   Alert,
   Button,
   Menu,
@@ -39,6 +38,7 @@ import { useRouter } from "next/navigation";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { alpha } from "@mui/system";
 
 export default function DataSource() {
   const dialogs = useDialogs();
@@ -315,7 +315,6 @@ export default function DataSource() {
               label={sensitivity}
               size="small"
               sx={{
-                // fontWeight: 600,
                 letterSpacing: 0.5,
                 borderRadius: "6px",
                 color: textColor,
@@ -523,77 +522,77 @@ export default function DataSource() {
           Company: {selectedCompany?.name}
         </Typography> */}
 
+            <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          mb: 2,
+        }}
+      >
         <Box
-          sx={{
+          sx={(theme) => ({
             display: "flex",
-            justifyContent: "flex-end", // 🔥 aligns inner Box to the end (right)
-            mb: 2,
-          }}
+            alignItems: "center",
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: "999px",
+            padding: "10px 15px",
+            width: 350,
+            boxShadow: theme.shadows[3],
+            marginBottom: "10px",
+          })}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "#FFFFFF",
-              borderRadius: "999px",
-              padding: "10px 15px",
-              width: 350,
-              boxShadow: `
-                                  rgba(100, 134, 169, 0.18) 24px 17px 40px 4px,
-                                  rgba(100, 134, 169, 0.15) -12px -10px 30px 2px  `,
-              marginBottom: "10px",
+          <TextField
+            placeholder="Search..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            variant="standard"
+            fullWidth
+            InputProps={{
+              disableUnderline: true,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <GridSearchIcon sx={(theme) => ({ 
+                    color: theme.palette.text.primary,
+                    fontSize: "20px" 
+                  })} />
+                </InputAdornment>
+              ),
+              sx: (theme) => ({
+                fontSize: "1rem",
+                color: theme.palette.text.primary,
+                fontWeight: "500",
+                fontFamily: "monospace",
+              }),
             }}
-          >
-            <TextField
-              placeholder="Search..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              variant="standard"
-              fullWidth
-              InputProps={{
-                disableUnderline: true,
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <GridSearchIcon sx={{ color: "black", fontSize: "20px" }} />
-                  </InputAdornment>
-                ),
-                sx: {
-                  fontSize: "1rem",
-                  color: "black",
-                  fontWeight: "500",
-                  fontFamily: "monospace",
-                },
-              }}
-              sx={{
-                background: "#edf3ff",
-                borderRadius: "30px",
-                padding: "3px 30px 3px 10px",
-                maxWidth: "100%",
-              }}
-            />
+            sx={(theme) => ({
+              background: alpha(theme.palette.primary.light, 0.1),
+              borderRadius: "30px",
+              padding: "3px 30px 3px 10px",
+              maxWidth: "100%",
+            })}
+          />
 
-            <IconButton
-              color="primary"
-              sx={{
-                color: "white",
-                background: "rgb(17, 4, 122)",
-                marginLeft: "20px",
-                padding: "8px",
-                "&:hover": {
-                  background: "rgb(17, 4, 122)",
-                  color: "white", // 👈 Prevents color change
-                },
-              }}
-              onClick={() => handleAdd()}
-            >
-              <Icon>add</Icon>
-            </IconButton>
-          </Box>
+          <IconButton
+            color="primary"
+            sx={(theme) => ({
+              color: theme.palette.primary.contrastText,
+              background: theme.palette.primary.main,
+              marginLeft: "20px",
+              padding: "8px",
+              "&:hover": {
+                background: theme.palette.primary.dark,
+              },
+            })}
+            onClick={() => handleAdd()}
+          >
+            <Icon>add</Icon>
+          </IconButton>
         </Box>
+      </Box>
       </Box>
 
       <Paper
-        sx={{
+        sx={(theme) => ({
           p: 1.5,
           mb: 3,
           display: "flex",
@@ -601,10 +600,11 @@ export default function DataSource() {
           gap: 1,
           alignItems: "center",
           borderRadius: "8px",
-          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+          boxShadow: theme.shadows[1],
           border: "1px solid",
-          borderColor: "divider",
-        }}
+          borderColor: theme.palette.divider,
+          backgroundColor: theme.palette.background.paper,
+        })}
       >
         <Badge badgeContent={filterCount} color="primary" sx={{ mr: 1 }}>
           <FilterAltIcon color="action" />
@@ -627,15 +627,15 @@ export default function DataSource() {
               size="small"
               onClick={(e) => handleFilterClick(e, filter)}
               endIcon={<ArrowDropDownIcon />}
-              sx={{
+              sx={(theme) => ({
                 textTransform: "none",
-                borderColor: "divider",
-                color: "text.primary",
+                borderColor: theme.palette.divider,
+                color: theme.palette.text.primary,
                 "&:hover": {
-                  borderColor: "primary.main",
-                  backgroundColor: "action.hover",
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: theme.palette.action.hover,
                 },
-              }}
+              })}
             >
               {filter}
             </Button>
@@ -647,14 +647,14 @@ export default function DataSource() {
               size="small"
               startIcon={<FilterAltOffIcon fontSize="small" />}
               onClick={handleClearAllFilters}
-              sx={{
+              sx={(theme) => ({
                 textTransform: "none",
-                color: "text.secondary",
+                color: theme.palette.text.secondary,
                 ml: 1,
                 "&:hover": {
-                  color: "error.main",
+                  color: theme.palette.error.main,
                 },
-              }}
+              })}
             >
               Clear all
             </Button>
@@ -676,16 +676,16 @@ export default function DataSource() {
               key={filter.name}
               label={`${filter.name}: ${filter.value}`}
               onDelete={() => handleClearFilter(filter.name)}
-              sx={{
+              sx={(theme) => ({
                 borderRadius: "16px",
-                backgroundColor: "action.selected",
+                backgroundColor: theme.palette.action.selected,
                 "& .MuiChip-deleteIcon": {
-                  color: "text.secondary",
+                  color: theme.palette.text.secondary,
                   "&:hover": {
-                    color: "error.main",
+                    color: theme.palette.error.main,
                   },
                 },
-              }}
+              })}
             />
           ))}
         </Box>
@@ -694,7 +694,11 @@ export default function DataSource() {
       </Paper>
 
       <Paper
-        sx={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)", overflow: "hidden" }}
+        sx={(theme) => ({
+          boxShadow: theme.shadows[2],
+          overflow: "hidden",
+          backgroundColor: theme.palette.background.paper,
+        })}
       >
         <Box sx={{ height: 600, width: "100%" }}>
           <DataGrid
@@ -715,25 +719,25 @@ export default function DataSource() {
             onPaginationModelChange={setPaginationModel}
             onSortModelChange={setSortModel}
             getRowId={(row) => row._id}
-            sx={{
-              border: "1px solid rgb(212,212,212)",
-              boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+            sx={(theme) => ({
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: theme.shadows[1],
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f7f7f7",
-                color: "black",
+                backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
+                color: theme.palette.text.primary,
                 fontSize: "14px",
               },
               "& .MuiDataGrid-columnHeaderTitle": {
-                color: "black",
+                color: theme.palette.text.primary,
                 fontWeight: 600,
               },
               "& .MuiCheckbox-root": {
-                color: "#9e9e9e", // gray when unchecked
+                color: theme.palette.text.secondary,
                 "&.Mui-checked": {
-                  color: "#1976d2", // gray when checked
+                  color: theme.palette.primary.main,
                 },
               },
-            }}
+            })}
             slots={{
               loadingOverlay: () => (
                 <Box

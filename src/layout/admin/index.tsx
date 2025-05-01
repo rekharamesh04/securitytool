@@ -2,6 +2,7 @@
 
 import useAuth from "@/hooks/useAuth";
 import theme from "@/theme/theme";
+import { Theme, SxProps  } from '@mui/material/styles';
 import { PageContainer } from "@toolpad/core";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,6 +20,24 @@ interface LayoutProps {
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { selectedCompany } = useCompanyContext();
+  const pageContainerStyles: SxProps<Theme> = {
+    color: (theme) => theme.palette.text.primary,
+    "& .MuiTypography-h4": {
+      color: (theme) => 
+        theme.palette.mode === 'light' ? '#0037d3' : theme.palette.primary.light,
+      fontSize: "1.35rem",
+      marginBottom: "1rem",
+      fontWeight: "bold",
+      fontFamily: "'Inter', sans-serif",
+    },
+    "& .MuiTypography-body1": {
+      color: (theme) => 
+        theme.palette.mode === 'light' ? 'red' : theme.palette.error.light,
+      fontSize: "1rem",
+      fontWeight: "600",
+      lineHeight: 1.6,
+    },
+  };
 
   return (
     <PageContainer
@@ -27,21 +46,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           ? `Data Source · ${selectedCompany.name}`
           : undefined
       }
-      sx={{
-        color: "rgb(30, 14, 145)",
-        "& .MuiTypography-h4": {
-          color: "rgb(30, 14, 145)",
-          fontSize: "2rem",
-          marginBottom: "1rem",
-          fontFamily: "'Inter', sans-serif",
-        },
-        "& .MuiTypography-body1": {
-          color: "rgb(30, 14, 145)",
-          fontSize: "1rem",
-          fontWeight: "600",
-          lineHeight: 1.6,
-        },
-      }}
+      sx={pageContainerStyles}
     >
       {children}
     </PageContainer>
@@ -65,11 +70,77 @@ export default function AdminLayout(props: LayoutProps) {
     }
   };
 
+  const dashboardStyles: SxProps<Theme> = {
+    "& .MuiAppBar-root": {
+      backgroundColor: (theme: Theme) => 
+        theme.palette.mode === 'light' ? '#fafbff' : theme.palette.background.default,
+    },
+    "& .MuiDrawer-root": {
+      "& .MuiPaper-root": {
+        backgroundColor: (theme: Theme) => 
+          theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.paper,
+      },
+    },
+    "& .Mui-selected": {
+      "& *": {
+        color: "white !important",
+      },
+    },
+    "& .MuiListSubheader-root": {
+      fontFamily: "'Inter', sans-serif",
+      color: (theme: Theme) => 
+        theme.palette.mode === 'light' ? '#0037d3' : theme.palette.primary.light,
+      fontWeight: "bold",
+      fontSize: "14px",
+      letterSpacing: "0.25px",
+      marginTop: "10px",
+      pl: "10px",
+      lineHeight: 1.5,
+    },
+    "& .MuiListItemButton-root": {
+      borderRadius: "8px",
+      marginBottom: "2px",
+      paddingLeft: "10px",
+      whiteSpace: "nowrap",
+      "&.Mui-selected": {
+        backgroundColor: "#5D87FF !important",
+        color: "inherit !important",
+        "& .MuiListItemIcon-root": {
+          color: "inherit !important",
+        },
+        "&:hover": {
+          backgroundColor: "#5D87FF",
+        },
+      },
+      "&:hover": {
+        backgroundColor: (theme: Theme) => 
+          theme.palette.mode === 'light' ? "#ECF2FF" : theme.palette.action.hover,
+        color: (theme: Theme) => 
+          theme.palette.mode === 'light' ? "#5D87FF" : theme.palette.primary.light,
+        "& .MuiListItemIcon-root": {
+          color: "inherit",
+        },
+      },
+    },
+    "& .MuiListItemIcon-root": {
+      minWidth: "36px",
+      color: "inherit",
+    },
+    "& .MuiCollapse-root .MuiListItemButton-root": {
+      paddingLeft: "30px",
+    },
+  };
+
   return (
     <NextAppProvider
       navigation={adminNavigation}
       branding={{
-        logo: <img src="/logo.png" alt="Monitoring App" />,
+        logo: <img src="/logo.png" alt="Monitoring App" style={{ 
+          borderRadius: '15px',
+          width: '150px',
+          height: '130px',
+          objectFit: 'contain'
+        }}  />,
         title: "",
         homeUrl: "/admin",
       }}
@@ -93,70 +164,64 @@ export default function AdminLayout(props: LayoutProps) {
       }}
     >
       <CompanyProvider>
-        <DashboardLayout
-          sx={{
-            "& .MuiAppBar-root": {
-              backgroundColor: "#f7f7f7",
-              color: "white",
-              boxShadow: "none",
-              backgroundImage: "none",
-            },
-            "& .MuiDrawer-root": {
-              "& .MuiPaper-root": {
-                backgroundColor: "#f7f7f7",
-                boxSizing: "border-box",
-                transition: "width 0.3s ease, transform 0.3s ease",
-              },
-            },
-            "& .Mui-selected": {
-              "& *": {
-                color: "white !important",
-              },
-            },
-            "& .MuiListSubheader-root": {
-              fontFamily:
-                "'Inter', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-              color: "rgb(17, 4, 122)",
-              fontSize: "12px",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.75px",
-              marginTop: "10px",
-              pl: "10px",
-              lineHeight: 1.5,
-              backgroundColor: "transparent",
-            },
-            "& .MuiListItemButton-root": {
-              borderRadius: "8px",
-              marginBottom: "2px",
-              paddingLeft: "10px",
-              whiteSpace: "nowrap",
-              "&.Mui-selected": {
-                backgroundColor: "#5D87FF !important",
-                color: "inherit !important",
-                "& .MuiListItemIcon-root": {
-                  color: "inherit !important",
-                },
-                "&:hover": {
-                  backgroundColor: "#5D87FF",
-                },
-              },
-              "&:hover": {
-                backgroundColor: "#ECF2FF",
-                color: "#5D87FF",
-                "& .MuiListItemIcon-root": {
-                  color: "inherit",
-                },
-              },
-            },
-            "& .MuiListItemIcon-root": {
-              minWidth: "36px",
-              color: "inherit",
-            },
-            "& .MuiCollapse-root .MuiListItemButton-root": {
-              paddingLeft: "30px",
-            },
-          }}
+        <DashboardLayout sx={dashboardStyles}
+          // sx={{
+          //   "& .MuiAppBar-root": {
+          //     backgroundColor: (theme: Theme) => 
+          //       theme.palette.mode === 'light' ? '#fafbff' : theme.palette.background.default,
+          //   },
+          //   "& .MuiDrawer-root": {
+          //     "& .MuiPaper-root": {
+          //       backgroundColor: (theme: Theme) => 
+          //         theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.paper,
+          //     },
+          //   },
+          //   "& .Mui-selected": {
+          //     "& *": {
+          //       color: "white !important",
+          //     },
+          //   },
+          //   "& .MuiListSubheader-root": {
+          //     fontFamily: "'Inter', sans-serif",
+          //     color: "#0037d3",
+          //     fontWeight: "bold",
+          //     fontSize: "14px",
+          //     letterSpacing: "0.25px",
+          //     marginTop: "10px",
+          //     pl: "10px",
+          //     lineHeight: 1.5,
+          //   },
+          //   "& .MuiListItemButton-root": {
+          //     borderRadius: "8px",
+          //     marginBottom: "2px",
+          //     paddingLeft: "10px",
+          //     whiteSpace: "nowrap",
+          //     "&.Mui-selected": {
+          //       backgroundColor: "#5D87FF !important",
+          //       color: "inherit !important",
+          //       "& .MuiListItemIcon-root": {
+          //         color: "inherit !important",
+          //       },
+          //       "&:hover": {
+          //         backgroundColor: "#5D87FF",
+          //       },
+          //     },
+          //     "&:hover": {
+          //       backgroundColor: "#ECF2FF",
+          //       color: "#5D87FF",
+          //       "& .MuiListItemIcon-root": {
+          //         color: "inherit",
+          //       },
+          //     },
+          //   },
+          //   "& .MuiListItemIcon-root": {
+          //     minWidth: "36px",
+          //     color: "inherit",
+          //   },
+          //   "& .MuiCollapse-root .MuiListItemButton-root": {
+          //     paddingLeft: "30px",
+          //   },
+          // }}
         >
           <LayoutContent>{children}</LayoutContent>
         </DashboardLayout>

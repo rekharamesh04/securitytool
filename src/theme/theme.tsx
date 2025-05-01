@@ -25,6 +25,10 @@ const themeOptions = {
             default: '#fbfcfe', // Default background color
             paper: '#ffffff',   // Background for paper components
         },
+        color : {
+            default: '#0037d3',
+            paper: '#ffffff',   // Background for paper components
+        },
         text: {
             primary: '#333', // Text on default background
             secondary: '#ed1a26', // Secondary text color
