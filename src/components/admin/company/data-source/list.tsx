@@ -6,8 +6,6 @@ import {
   Box,
   Chip,
   CircularProgress,
-  Icon,
-  IconButton,
   InputAdornment,
   TextField,
   Typography,
@@ -39,6 +37,9 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { alpha } from "@mui/system";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import DownloadIcon from "@mui/icons-material/Download";
+import AddIcon from "@mui/icons-material/Add";
 
 export default function DataSource() {
   const dialogs = useDialogs();
@@ -57,7 +58,7 @@ export default function DataSource() {
 
   const router = useRouter();
 
-  const [cloudProvider, setCloudProvider] = useState<string>("AWS");
+  const [cloudProvider, setCloudProvider] = useState<string>("");
   const [infrastructure, setInfrastructure] = useState<string>("");
   const [account, setAccount] = useState<string>("");
   const [scanStatus, setScanStatus] = useState<string>("");
@@ -254,7 +255,7 @@ export default function DataSource() {
     () => [
       {
         field: "name",
-        headerName: "Datastore",
+        headerName: "DATASTORE",
         flex: 1.2,
         minWidth: 200,
         renderCell: ({ row }) => (
@@ -270,7 +271,7 @@ export default function DataSource() {
       },
       {
         field: "account",
-        headerName: "Account",
+        headerName: "ACCOUNT",
         flex: 1,
         minWidth: 200,
         renderCell: ({ row }) => (
@@ -284,7 +285,7 @@ export default function DataSource() {
       },
       {
         field: "dataSensitivity",
-        headerName: "Sensitivity",
+        headerName: "SENSITIVITY",
         width: 150,
         renderCell: ({ row }) => {
           const sensitivity = row.sensitivity.toUpperCase() as
@@ -329,7 +330,7 @@ export default function DataSource() {
       },
       {
         field: "sensitiveRecords",
-        headerName: "Sensitive Records",
+        headerName: "SENSITIVE RECORDS",
         width: 170,
         align: "center",
         headerAlign: "center",
@@ -389,29 +390,34 @@ export default function DataSource() {
       {
         field: "scanStatus",
         headerName: "SCAN STATUS",
-        width: 150,
+        width: 160,
         renderCell: ({ row }) => {
           const status = row.scanStatus;
           const isScanned = status === "Scanned";
 
           return (
             <Button
-              variant="contained"
-              color={isScanned ? "success" : "warning"} // Keep green/yellow color based on status
-              sx={{
-                minWidth: "50px",
-                fontSize: "0.875rem",
-                textTransform: "none",
-              }}
-              onClick={() => {
-                console.log(`Clicked on status: ${status}`);
-              }}
-            >
-              Scan {/* Always show "Scan" */}
-            </Button>
-          );
-        },
+            variant="outlined"
+            color={isScanned ? "success" : "inherit"}
+            // onClick={() => {
+            //   console.log(`Clicked on status: ${status}`);
+            // }}
+            sx={{
+              px: 2,
+              py: 0.5,
+              fontWeight: 500,
+              fontSize: "0.75rem",
+              borderRadius: "20px",
+              textTransform: "capitalize",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {isScanned ? "Rescan" : "Scan"}
+          </Button>
+        );
       },
+    }
+
       // {
       //   field: "actions",
       //   headerName: "Actions",
@@ -522,26 +528,13 @@ export default function DataSource() {
           Company: {selectedCompany?.name}
         </Typography> */}
 
-            <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          mb: 2,
-        }}
-      >
-        <Box
-          sx={(theme) => ({
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: "999px",
-            padding: "10px 15px",
-            width: 350,
-            boxShadow: theme.shadows[3],
-            marginBottom: "10px",
-          })}
-        >
-          <TextField
+<Box display="flex"
+          alignItems="center"
+          justifyContent="flex-end"
+          gap={1}
+          sx={{ ml: "auto" }}>
+
+        <TextField
             placeholder="Search..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -551,9 +544,9 @@ export default function DataSource() {
               disableUnderline: true,
               startAdornment: (
                 <InputAdornment position="start">
-                  <GridSearchIcon sx={(theme) => ({ 
+                  <GridSearchIcon sx={(theme) => ({
                     color: theme.palette.text.primary,
-                    fontSize: "20px" 
+                    fontSize: "20px"
                   })} />
                 </InputAdornment>
               ),
@@ -568,28 +561,58 @@ export default function DataSource() {
               background: alpha(theme.palette.primary.light, 0.1),
               borderRadius: "30px",
               padding: "3px 30px 3px 10px",
-              maxWidth: "100%",
+              maxWidth: "100px",
             })}
           />
 
-          <IconButton
-            color="primary"
-            sx={(theme) => ({
-              color: theme.palette.primary.contrastText,
-              background: theme.palette.primary.main,
-              marginLeft: "20px",
-              padding: "8px",
-              "&:hover": {
-                background: theme.palette.primary.dark,
-              },
-            })}
-            onClick={() => handleAdd()}
+        <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{ textTransform: "none" }}
           >
-            <Icon>add</Icon>
-          </IconButton>
+            Add
+          </Button>
+
+          <Button
+            variant="outlined"
+            startIcon={<FilterListIcon />}
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+          >
+            Filters {filterCount > 0 ? `(${filterCount})` : ""}
+          </Button>
+
+          {filterCount > 0 && (
+            <Button
+              variant="text"
+              color="error"
+              onClick={handleClearAllFilters}
+            >
+              Clear All Filters
+            </Button>
+          )}
+
+          <Button
+            variant="outlined"
+            onClick={handleViewDetails}
+            sx={{ textTransform: "none" }}
+          >
+            Columns
+          </Button>
+
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={() => {
+              // Add your download logic here
+              console.log("Downloading...");
+            }}
+          >
+            Export CSV
+          </Button>
         </Box>
       </Box>
-      </Box>
+
 
       <Paper
         sx={(theme) => ({
@@ -600,8 +623,8 @@ export default function DataSource() {
           gap: 1,
           alignItems: "center",
           borderRadius: "8px",
-          boxShadow: theme.shadows[1],
-          border: "1px solid",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          border: "1px solid rgb(212,212,212)",
           borderColor: theme.palette.divider,
           backgroundColor: theme.palette.background.paper,
         })}
@@ -727,6 +750,13 @@ export default function DataSource() {
                 color: theme.palette.text.primary,
                 fontSize: "14px",
               },
+               // ✅ Grey header cell background (stronger selector)
+              "& .MuiDataGrid-columnHeader": {
+                backgroundColor: theme.palette.mode === 'light' ? '#f0f0f0' : theme.palette.background.default,
+                color: "#424242", // Grey text color
+                fontWeight: "600",
+              },
+
               "& .MuiDataGrid-columnHeaderTitle": {
                 color: theme.palette.text.primary,
                 fontWeight: 600,

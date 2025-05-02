@@ -9,13 +9,17 @@ import {
   Checkbox,
   Menu,
   MenuItem,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import AddIcon from "@mui/icons-material/Add";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function DataSourceHeader() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const colorMap: Record<string, string> = {
     PERSONAL: "#3f51b5", // Indigo
@@ -44,6 +48,19 @@ export default function DataSourceHeader() {
   ];
 
   const items = ["Personal", "Business & IP", "Financial"];
+
+  const tabs = [
+    { label: 'Overview', route: '/' },
+    { label: 'Issues', route: '/issues' },
+    { label: 'Classified Data', route: '/ClassifiedData' },
+  ];
+
+
+  const currentTabIndex = tabs.findIndex(tab => tab.route === pathname);
+
+  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
+    router.push(tabs[newValue].route);
+  };
   return (
     <Box
       sx={{
@@ -52,6 +69,7 @@ export default function DataSourceHeader() {
         backgroundColor: "#fafafa",
       }}
     >
+
       {/* First Row */}
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
@@ -170,6 +188,36 @@ export default function DataSourceHeader() {
       </Box>
 
       <Divider
+        sx={{ borderColor: "#E0E0E0", marginBottom: "24px", marginTop: "10px" }}
+      />
+
+
+<Box sx={{ width: '100%', mt: 4 }}>
+      <Tabs
+        value={currentTabIndex === -1 ? false : currentTabIndex}
+        onChange={handleChange}
+        textColor="inherit"
+        TabIndicatorProps={{
+          style: { backgroundColor: 'black' },
+        }}
+      >
+        {tabs.map((tab) => (
+          <Tab
+            key={tab.route}
+            label={tab.label}
+            sx={{
+              color: 'black',
+              '&.Mui-selected': {
+                color: 'black',
+                fontWeight: 'bold',
+              },
+            }}
+          />
+        ))}
+      </Tabs>
+    </Box>
+
+         <Divider
         sx={{ borderColor: "#E0E0E0", marginBottom: "24px", marginTop: "10px" }}
       />
 
@@ -332,23 +380,6 @@ export default function DataSourceHeader() {
               Datastore Contacts
             </Typography>
             <Box sx={{ pl: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <Checkbox
-                  size="small"
-                  sx={{
-                    p: 0,
-                    mr: 1,
-                    color: "#5f6368",
-                    "&.Mui-checked": {
-                      color: "#1976d2",
-                    },
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#5f6368" }}
-                ></Typography>
-              </Box>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Checkbox
                   size="small"
@@ -363,7 +394,145 @@ export default function DataSourceHeader() {
               </Box>
             </Box>
           </Box>
+
+          <Box sx={{mt: 3}}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "16px",
+                fontWeight: 600,
+                mb: 2,
+                color: "#1a1a1a",
+              }}
+            >
+              Properties
+            </Typography>
+
+            <Divider sx={{ my: 3, borderColor: "#e0e0e0" }} />
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 1,
+                color: "#5f6368",
+              }}
+            >
+              Account
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 4,
+                color: "#1a1a1a",
+              }}
+            >
+              Stark (AWS)
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 1,
+                color: "#5f6368",
+              }}
+            >
+              Mounted On
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 4,
+                color: "#1a1a1a",
+              }}
+            >
+              Creeds Datastore
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 1,
+                color: "#5f6368",
+              }}
+            >
+              Datastore Type
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 4,
+                color: "#1a1a1a",
+              }}
+            >
+              S3 Bucket
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 1,
+                color: "#5f6368",
+              }}
+            >
+              Regions
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 4,
+                color: "#1a1a1a",
+              }}
+            >
+              us-east-1
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 1,
+                color: "#5f6368",
+              }}
+            >
+              Datastore size
+            </Typography>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "15px",
+                fontWeight: 600,
+                mb: 4,
+                color: "#1a1a1a",
+              }}
+            >
+              867GB
+            </Typography>
         </Box>
+        </Box>
+
+
 
         <Box
           sx={{
@@ -430,7 +599,7 @@ export default function DataSourceHeader() {
               sx={{ paddingTop: 2 }}
             >
               {items.map((item, index) => {
-                let labelKey = item
+                const labelKey = item
                   .trim()
                   .toUpperCase()
                   .replace(/ & /g, "_")
@@ -464,7 +633,7 @@ export default function DataSourceHeader() {
               mb: 3,
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant="h6" sx={{ mb: 4, fontWeight: 600 }}>
               Data classes
             </Typography>
 
@@ -505,7 +674,7 @@ export default function DataSourceHeader() {
           </Box>
 
           {/* Data Context */}
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 4 }}>
             <Typography
               variant="body2"
               sx={{
@@ -517,15 +686,30 @@ export default function DataSourceHeader() {
             >
               Data context
             </Typography>
-            <Box sx={{ display: "flex", gap: "8px" }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography>- Employee data</Typography>
-              <Typography>● EU</Typography>
-              <Typography>● Identifiable</Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {['EU', 'Identifiable'].map((text) => (
+                  <Box
+                    key={text}
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1, // square corners (use 0 for sharp)
+                      border: '1px solid #ccc',
+                      color: '#000',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                      {text}
+                  </Box>
+                ))}
+              </Box>
             </Box>
           </Box>
 
           {/* Collections */}
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 4 }}>
             <Typography
               variant="body2"
               sx={{
@@ -537,50 +721,67 @@ export default function DataSourceHeader() {
             >
               Collections
             </Typography>
-            <Typography>- Learned</Typography>
+            <Box
+              sx={{
+                display: 'inline-block',
+                px: 1.5,
+                py: 0.5,
+                backgroundColor: '#e3f2fd', // light blue
+                color: '#000',
+                borderRadius: 1, // square-like (set to 0 for hard edges)
+                fontSize: '14px',
+                border: '1px solid #bbdefb',
+              }}
+            >
+              - Learned
+            </Box>
           </Box>
 
           {/* File Types */}
-          <Box>
+          <Box sx={{ mb: 3 }}>
             <Typography
               variant="body2"
               sx={{
-                color: "#5f6368",
-                fontWeight: "500px",
+                color: '#5f6368',
+                fontWeight: 500,
                 mb: 2,
-                fontSize: "16px",
+                fontSize: '16px',
               }}
             >
               File types
             </Typography>
-            <Typography sx={{ minWidth: "180px" }}>File types</Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px 16px" }}>
-              <Typography>
-                -csv<span style={{ marginLeft: "8px" }}>1.8M</span>
-              </Typography>
-              <Typography>
-                log<span style={{ marginLeft: "8px" }}>1.2M</span>
-              </Typography>
-              <Typography>
-                parquet<span style={{ marginLeft: "8px" }}>1.1M</span>
-              </Typography>
-              <Typography>
-                xslx<span style={{ marginLeft: "8px" }}>248K</span>
-              </Typography>
-              <Typography>
-                zip<span style={{ marginLeft: "8px" }}>59K</span>
-              </Typography>
-              <Typography>
-                txt<span style={{ marginLeft: "8px" }}>15.6K</span>
-              </Typography>
-              <Typography>
-                docx<span style={{ marginLeft: "8px" }}>658</span>
-              </Typography>
-              <Typography>
-                pdf<span style={{ marginLeft: "8px" }}>12</span>
-              </Typography>
-            </Box>
+
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+            {[
+              ['csv', '1.8M'],
+              ['log', '1.2M'],
+              ['parquet', '1.1M'],
+              ['xslx', '248K'],
+              ['zip', '59K'],
+              ['txt', '15.6K'],
+              ['docx', '658'],
+              ['pdf', '12'],
+            ].map(([type, size]) => (
+              <Box
+                key={type}
+                sx={{
+                  border: '1px solid #ccc',
+                  borderRadius: 1, // square look
+                  px: 1.5,
+                  py: 0.75,
+                  fontSize: '14px',
+                  minWidth: '100px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  color: '#000',
+                }}
+              >
+                <span>{type}</span>
+                <span>{size}</span>
+              </Box>
+            ))}
           </Box>
+        </Box>
         </Box>
       </Box>
     </Box>

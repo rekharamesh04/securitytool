@@ -16,8 +16,8 @@ const validationSchema = yup.object().shape({
   company: yup.object().required('Company is required'),
   datastore: yup.string().required('Datastore is required'),
   account: yup.string().required('Account is required'),
-  sensitivity: yup.string().required('Sensitivity is required'),
-  sensitive_records: yup.string().required('Sensitive Records is required'),
+  // sensitivity: yup.string().required('Sensitivity is required'),
+  // sensitive_records: yup.string().required('Sensitive Records is required'),
   data: yup.string().required('Data is required'),
   status: yup.boolean().required(),
 });
@@ -30,6 +30,37 @@ export default function DataSourceForm({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const notifications = useNotifications();
+
+  // Datastore options
+  const DATASTORE_OPTIONS = [
+    {
+      group: 'Cloud Services',
+      items: ['AWS', 'Azure', 'Google Cloud', 'IBM Cloud']
+    },
+    {
+      group: 'Databases',
+      items: [
+        'MySQL',
+        'PostgreSQL',
+        'MongoDB',
+        'Oracle',
+        'SQL Server',
+      ]
+    },
+    {
+      group: 'Email Services',
+      items: ['Gmail', 'Outlook', 'Yahoo Mail', 'ProtonMail', 'Zoho Mail']
+    },
+
+  ];
+
+  // Flatten for the actual options
+  const flattenedOptions = DATASTORE_OPTIONS.flatMap(group =>
+    group.items.map(item => ({
+      label: item,
+      group: group.group
+    }))
+  );
 
   const {
     register,
@@ -92,6 +123,7 @@ export default function DataSourceForm({
   };
 
   const company = watch("company");
+  const datastore = watch("datastore");
 
   if (loading) return <p>Loading...</p>;
 
@@ -117,7 +149,7 @@ export default function DataSourceForm({
 
           <CompanyAutocomplete setValue={setValue} value={company} />
 
-          <TextField
+          {/* <TextField
             label="Datastore"
             fullWidth
             margin="normal"
@@ -125,6 +157,27 @@ export default function DataSourceForm({
             error={!!errors.datastore}
             helperText={errors.datastore?.message}
             {...register('datastore')}
+          /> */}
+
+          <Autocomplete
+            options={flattenedOptions}
+            groupBy={(option) => option.group}
+            getOptionLabel={(option) => option.label}
+            value={datastore ? { label: datastore, group: '' } : null}
+            onChange={(_, newValue) => {
+              setValue('datastore', newValue?.label || '');
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Datastore"
+                fullWidth
+                margin="normal"
+                error={!!errors.datastore}
+                helperText={errors.datastore?.message}
+                InputLabelProps={{ shrink: true }}
+              />
+            )}
           />
 
           <TextField
@@ -137,7 +190,7 @@ export default function DataSourceForm({
             {...register('account')}
           />
 
-          <TextField
+          {/* <TextField
             label="Sensitivity"
             fullWidth
             margin="normal"
@@ -155,7 +208,7 @@ export default function DataSourceForm({
             error={!!errors.sensitive_records}
             helperText={errors.sensitive_records?.message}
             {...register('sensitive_records')}
-          />
+          /> */}
 
           {/* <TextField
             label="Data"

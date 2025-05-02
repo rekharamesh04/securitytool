@@ -2,7 +2,6 @@
 
 import { LocationModel } from '@/models/Location.model';
 import theme from "@/theme/theme";
-import { useTheme } from '@mui/material/styles';
 import axiosInstance from '@/utils/axiosInstance';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Button, Dialog, DialogContent, DialogTitle, FormControlLabel, Icon, IconButton, Stack, Switch, TextField, Typography } from '@mui/material';
@@ -114,9 +113,9 @@ export default function LocationForm({
                 border: `1px solid ${theme.palette.divider}`,
             }
         }}>
-            <DialogTitle sx={{ 
-                backgroundColor: theme.palette.mode === 'light' ? 
-                    theme.palette.grey[100] : 
+            <DialogTitle sx={{
+                backgroundColor: theme.palette.mode === 'light' ?
+                    theme.palette.grey[100] :
                     theme.palette.background.default,
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 py: 2,
@@ -128,7 +127,7 @@ export default function LocationForm({
                     alignItems="center"
                     justifyContent="space-between"
                 >
-                    <Typography variant="h5" sx={{ 
+                    <Typography variant="h5" sx={{
                         fontWeight: 600,
                         color: theme.palette.text.primary,
                     }}>
@@ -145,12 +144,12 @@ export default function LocationForm({
                 </Stack>
             </DialogTitle>
             <form onSubmit={handleSubmit(onSubmit)}>
-                <DialogContent sx={{ 
+                <DialogContent sx={{
                     backgroundColor: theme.palette.background.paper,
                 }}>
                     <CompanyAutocomplete setValue={setValue} value={company}/>
 
-                    <Box sx={{ 
+                    <Box sx={{
                         display: 'grid',
                         gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
                         gap: 2,
@@ -170,7 +169,7 @@ export default function LocationForm({
                                 label={label}
                                 fullWidth
                                 margin="normal"
-                                InputLabelProps={{ 
+                                InputLabelProps={{
                                     shrink: true,
                                     sx: {
                                         color: theme.palette.text.secondary,
@@ -190,7 +189,7 @@ export default function LocationForm({
                                     }
                                 }}
                                 error={!!errors[field as keyof typeof errors]}
-                                helperText={errors[field as keyof typeof errors]?.message}
+                                helperText={errors[field as keyof typeof errors]?.message?.toString() || ''}
                                 {...register(field as keyof LocationModel)}
                             />
                         ))}
@@ -333,16 +332,16 @@ export default function LocationForm({
                                 color="primary"
                                 sx={{
                                     '& .MuiSwitch-switchBase': {
-                                        color: theme.palette.mode === 'light' ? 
-                                            theme.palette.grey[400] : 
+                                        color: theme.palette.mode === 'light' ?
+                                            theme.palette.grey[400] :
                                             theme.palette.grey[600],
                                         '&.Mui-checked': {
                                             color: theme.palette.primary.main,
                                         },
                                     },
                                     '& .MuiSwitch-track': {
-                                        backgroundColor: theme.palette.mode === 'light' ? 
-                                            theme.palette.grey[400] : 
+                                        backgroundColor: theme.palette.mode === 'light' ?
+                                            theme.palette.grey[400] :
                                             theme.palette.grey[600],
                                     },
                                 }}
@@ -354,7 +353,7 @@ export default function LocationForm({
                                 {watch('status') ? 'Active' : 'Inactive'}
                             </Typography>
                         }
-                        sx={{ 
+                        sx={{
                             mt: 1,
                             ml: 1,
                             '& .MuiFormControlLabel-label': {

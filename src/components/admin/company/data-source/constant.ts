@@ -19,8 +19,8 @@ export interface FormModel {
   company: object;
   datastore: string;
   account: string;
-  sensitivity: string;
-  sensitive_records: string;
+  // sensitivity: string;
+  // sensitive_records: string;
   data: string;
   status: boolean;
 }
