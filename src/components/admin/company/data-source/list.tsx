@@ -447,7 +447,7 @@ export default function DataSource() {
   );
 
   const handleViewDetails = () => {
-    router.push("/admin/company/data-source/details");
+    router.push("/admin/company/data-source/dataDetails");
   };
   // Filter chip data
   const activeFilters = [
