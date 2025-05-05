@@ -13,6 +13,13 @@ import { defaultValues, fetchUrl } from './constant';
 import CompanyAutocomplete from '@/components/admin/autocomplete/companyAutocomplete';
 import { DialogProps, useNotifications } from '@toolpad/core';
 import { alpha } from '@mui/system';
+import { FieldError } from 'react-hook-form';
+import { Theme } from "@mui/material/styles";
+
+// Helper function to convert FieldError to string
+const getErrorMessage = (error: FieldError | undefined): string | undefined => {
+    return error?.message;
+  };
 
 // Validation schema
 const validationSchema = yup.object().shape({
@@ -105,14 +112,19 @@ export default function LocationForm({
     if (loading) return <p>Loading...</p>;
 
     return (
-        <Dialog fullWidth open={open} onClose={() => onClose(null)} PaperProps={{
+        <Dialog fullWidth open={open} onClose={() => onClose(null)}             PaperProps={{
             sx: {
-                borderRadius: 3,
-                backgroundImage: 'none',
-                backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-            }
+                borderRadius: "16px",
+                backgroundImage: "none",
+                backgroundColor: (theme: Theme) =>
+                    theme.palette.mode === "light" ? "#f7f7f7" : "black",
+                boxShadow: (theme) => theme.shadows[10],
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                maxWidth: "600px",
+                overflow: "hidden",
+            },
         }}>
+<<<<<<< Updated upstream
             <DialogTitle sx={{
                 backgroundColor: theme.palette.mode === 'light' ?
                     theme.palette.grey[100] :
@@ -121,39 +133,111 @@ export default function LocationForm({
                 py: 2,
                 px: 3,
             }}>
+=======
+            <DialogTitle                         sx={{
+                    backgroundColor: (theme: Theme) =>
+                        theme.palette.mode === "light" ? "#f7f7f7" : "#383838",
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    py: 3,
+                    px: 4,
+                    position: "relative",
+                    "&:after": {
+                        content: '""',
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "1px",
+                        background: `linear-gradient(90deg, transparent, ${theme.palette.divider}, transparent)`,
+                    },
+                }}>
+>>>>>>> Stashed changes
                 <Stack
                     direction="row"
                     spacing={2}
                     alignItems="center"
                     justifyContent="space-between"
                 >
+<<<<<<< Updated upstream
                     <Typography variant="h5" sx={{
                         fontWeight: 600,
                         color: theme.palette.text.primary,
                     }}>
+=======
+                    <Typography variant="h5"                                     sx={{
+                            fontWeight: 700,
+                            color: (theme: Theme) =>
+                                theme.palette.mode === "light" ? "black" : "white",
+                            letterSpacing: "0.5px",
+                            fontSize: "1.5rem",
+                        }}>
+>>>>>>> Stashed changes
                         {id != "new" ? 'Update Location' : 'Create Location'}
                     </Typography>
-                    <IconButton onClick={() => onClose(null)} sx={{
-                            color: theme.palette.text.secondary,
-                            '&:hover': {
-                                backgroundColor: alpha(theme.palette.text.secondary, 0.1),
-                            }
+                    <IconButton onClick={() => onClose(null)}                                     sx={{
+                            color: (theme: Theme) =>
+                                theme.palette.mode === "light" ? "white" : "white",
+                            backgroundColor: (theme: Theme) =>
+                                theme.palette.mode === "light" ? "#ed1a26" : "#282B73",
+                            borderRadius: "8px",
+                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.text.secondary, 0.2),
+                                transform: "rotate(90deg)",
+                            },
                         }}>
                         <Icon>close</Icon>
                     </IconButton>
                 </Stack>
             </DialogTitle>
             <form onSubmit={handleSubmit(onSubmit)}>
+<<<<<<< Updated upstream
                 <DialogContent sx={{
                     backgroundColor: theme.palette.background.paper,
                 }}>
                     <CompanyAutocomplete setValue={setValue} value={company}/>
 
                     <Box sx={{
+=======
+                <DialogContent                     sx={{
+                        py: 4,
+                        px: 4,
+                        backgroundColor: (theme: Theme) =>
+                            theme.palette.mode === "light" ? "#f7f7f7" : "black",
+                    }}>
+                        <Box sx={{marginBottom: "5px"}}>
+                        <CompanyAutocomplete setValue={setValue} value={company}/>
+                        </Box>
+
+                    <Box                         sx={{
+>>>>>>> Stashed changes
                         display: 'grid',
                         gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
                         gap: 2,
-                    }}>
+                            "& .MuiAutocomplete-root": {
+                                width: "100%",
+                                mb: 1,
+                            },
+                            "& .MuiAutocomplete-inputRoot": {
+                                borderRadius: "12px",
+                                backgroundColor: alpha(theme.palette.background.paper, 0.1),
+                                "& fieldset": {
+                                    borderColor: alpha(theme.palette.divider, 0.5),
+                                },
+                                "&:hover fieldset": {
+                                    borderColor: theme.palette.primary.main,
+                                },
+                                "&.Mui-focused fieldset": {
+                                    borderColor: theme.palette.primary.main,
+                                    boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                                },
+                            },
+                            "& .MuiInputLabel-root": {
+                                color: (theme: Theme) =>
+                                    theme.palette.mode === "light" ? "#ed1a26" : "white",
+                                fontWeight: 500,
+                            },
+                        }}>
                                                 {[
                             { field: 'name', label: 'Name' },
                             { field: 'dashboardUrl', label: 'Dashboard Url' },
@@ -172,155 +256,40 @@ export default function LocationForm({
                                 InputLabelProps={{
                                     shrink: true,
                                     sx: {
-                                        color: theme.palette.text.secondary,
+                                        color: (theme: Theme) =>
+                                            theme.palette.mode === "light" ? "#ed1a26" : "white",
+                                        fontWeight: 500,
+                                        fontSize: "0.95rem",
                                     }
                                 }}
                                 InputProps={{
                                     sx: {
-                                        borderRadius: 2,
-                                        backgroundColor: theme.palette.background.paper,
-                                        color: theme.palette.text.primary,
-                                        '& fieldset': {
-                                            borderColor: theme.palette.divider,
+                                        borderRadius: "12px",
+                                        backgroundColor: alpha(theme.palette.background.paper, 0.1),
+                                        color: (theme: Theme) =>
+                                            theme.palette.mode === "light" ? "#333" : "white",
+                                        "& fieldset": {
+                                            borderColor: alpha(theme.palette.divider, 0.5),
+                                            transition: "border-color 0.3s ease",
                                         },
-                                        '&:hover fieldset': {
+                                        "&:hover fieldset": {
                                             borderColor: theme.palette.primary.main,
+                                        },
+                                        "&.Mui-focused fieldset": {
+                                            borderColor: theme.palette.primary.main,
+                                            boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
                                         },
                                     }
                                 }}
                                 error={!!errors[field as keyof typeof errors]}
+<<<<<<< Updated upstream
                                 helperText={errors[field as keyof typeof errors]?.message?.toString() || ''}
+=======
+                                helperText={getErrorMessage(errors[field as keyof typeof errors] as FieldError)}
+>>>>>>> Stashed changes
                                 {...register(field as keyof LocationModel)}
                             />
                         ))}
-                                            {/* <TextField
-                        label="Name"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.name}
-                        helperText={errors.name?.message}
-                        {...register('name')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="Dashboard Url"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.dashboardUrl}
-                        helperText={errors.dashboardUrl?.message}
-                        {...register('dashboardUrl')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="Address"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.address}
-                        helperText={errors.address?.message}
-                        {...register('address')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="City"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.city}
-                        helperText={errors.city?.message}
-                        {...register('city')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="State"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.state}
-                        helperText={errors.state?.message}
-                        {...register('state')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="Zip"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.zip}
-                        helperText={errors.zip?.message}
-                        {...register('zip')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="Latitude"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.latitude}
-                        helperText={errors.latitude?.message}
-                        {...register('latitude')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    />
-
-                    <TextField
-                        label="Longitude"
-                        fullWidth
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.longitude}
-                        helperText={errors.longitude?.message}
-                        {...register('longitude')}
-                        {...register('longitude')}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: theme.palette.background.paper,
-                            }
-                        }}
-                    /> */}
                     </Box>
 
                     <FormControlLabel
@@ -331,25 +300,44 @@ export default function LocationForm({
                                 onChange={(e) => setValue('status', e.target.checked)} // Update `status` when the Switch is toggled
                                 color="primary"
                                 sx={{
+<<<<<<< Updated upstream
                                     '& .MuiSwitch-switchBase': {
                                         color: theme.palette.mode === 'light' ?
                                             theme.palette.grey[400] :
                                             theme.palette.grey[600],
                                         '&.Mui-checked': {
+=======
+                                    "& .MuiSwitch-switchBase": {
+                                        color: theme.palette.grey[600],
+                                        "&.Mui-checked": {
+>>>>>>> Stashed changes
                                             color: theme.palette.primary.main,
                                         },
+                                        "&.Mui-checked + .MuiSwitch-track": {
+                                            backgroundColor: theme.palette.primary.main,
+                                        },
                                     },
+<<<<<<< Updated upstream
                                     '& .MuiSwitch-track': {
                                         backgroundColor: theme.palette.mode === 'light' ?
                                             theme.palette.grey[400] :
                                             theme.palette.grey[600],
+=======
+                                    "& .MuiSwitch-track": {
+                                        backgroundColor: theme.palette.grey[600],
+                                        opacity: 0.8,
+>>>>>>> Stashed changes
                                     },
                                 }}
                             />
                         }
                         // label={watch('status') ? 'Active' : 'Inactive'} // Dynamic label based on the value
                         label={
-                            <Typography color={theme.palette.text.primary}>
+                            <Typography                                 sx={{
+                                color: (theme: Theme) =>
+                                    theme.palette.mode === "light" ? "#333" : "white",
+                                fontWeight: 500,
+                            }}>
                                 {watch('status') ? 'Active' : 'Inactive'}
                             </Typography>
                         }
@@ -362,31 +350,52 @@ export default function LocationForm({
                         }}
                     />
 
-                    <Box marginTop={4} display="flex" justifyContent="space-between" gap={2}>
-                        <Button type="submit" variant="contained" color="primary"                             sx={{
-                                px: 3,
-                                py: 1,
-                                borderRadius: 2,
-                                boxShadow: 'none',
+                    <Box                         sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                        }}>
+                        <Button type="submit" variant="contained" color="primary"                               sx={{
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: "12px",
+                                boxShadow: "none",
                                 backgroundColor: theme.palette.primary.main,
                                 color: theme.palette.primary.contrastText,
-                                '&:hover': {
-                                    boxShadow: 'none',
+                                fontWeight: 600,
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase",
+                                fontSize: "0.8rem",
+                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                "&:hover": {
                                     backgroundColor: theme.palette.primary.dark,
-                                }
+                                    transform: "translateY(-2px)",
+                                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                },
                             }}>
                             {id !== 'new' ? 'Update' : 'Create'}
                         </Button>
                         <Button type="button" variant="outlined" color="secondary" onClick={() => reset()}                             sx={{
-                                px: 3,
-                                py: 1,
-                                borderRadius: 2,
-                                borderColor: theme.palette.divider,
-                                color: theme.palette.text.primary,
-                                '&:hover': {
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: "12px",
+                                borderColor: (theme: Theme) =>
+                                    theme.palette.mode === "light" ? "#282B73" : "#282B73",
+                                color: (theme: Theme) =>
+                                    theme.palette.mode === "light" ? "#333" : "white",
+                                fontWeight: 600,
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase",
+                                fontSize: "0.8rem",
+                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                "&:hover": {
                                     borderColor: theme.palette.primary.main,
                                     backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                                }
+                                    transform: "translateY(-2px)",
+                                    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
+                                },
                             }}>
                             Reset
                         </Button>

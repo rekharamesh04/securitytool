@@ -82,9 +82,9 @@ const theme = createTheme(themeOptions,
           duration: {
             leavingScreen: 300,
             enteringScreen: 300,
-          },
+          }
         },
-      }
+    },
 );
 
 export default theme;
