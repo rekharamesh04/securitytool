@@ -216,7 +216,7 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
             onClick={() => onClose(null)}
             sx={{
               color: (theme: Theme) =>
-                theme.palette.mode === "light" ? "#ed1a26" : "white",
+                theme.palette.mode === "light" ? "white" : "white",
               backgroundColor: (theme: Theme) =>
                 theme.palette.mode === "light" ? "#ed1a26" : "#282B73",
               borderRadius: "8px",
