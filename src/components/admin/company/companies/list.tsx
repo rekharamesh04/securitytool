@@ -26,6 +26,7 @@ import useSWR, { mutate } from "swr";
 import { fetchUrl } from "./constant";
 import CompanyForm from "./form";
 import { useCompanyContext } from "@/contexts/CompanyContext";
+import { Theme } from "@mui/material/styles";
 
 interface Company {
   _id: number;
@@ -162,39 +163,39 @@ export default function CompanyList() {
         headerName: "Logo",
         width: 80,
         renderCell: (params: any) => {
-            const logoUrl = params.row.image || params.row.logo;
-            return (
-                <Box
-                    sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        overflow: 'hidden',
-                        border: '1px solid #e0e0e0',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: logoUrl ? 'transparent' : '#f5f5f5',
-                        marginTop: "5px"
-                    }}
-                >
-                    {logoUrl ? (
-                        <img
-                            src={logoUrl}
-                            alt="Company Logo"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                            }}
-                        />
-                    ) : (
-                        <Icon sx={{ color: '#9e9e9e', fontSize: '20px' }}>image</Icon>
-                    )}
-                </Box>
-            );
+          const logoUrl = params.row.image || params.row.logo;
+          return (
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: logoUrl ? "transparent" : "#f5f5f5",
+                marginTop: "5px",
+              }}
+            >
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="Company Logo"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <Icon sx={{ color: "#9e9e9e", fontSize: "20px" }}>image</Icon>
+              )}
+            </Box>
+          );
         },
-    },
+      },
       {
         field: "actions",
         headerName: "Action",
@@ -319,7 +320,7 @@ export default function CompanyList() {
         </IconButton>
       </Box> */}
 
-<Box
+      <Box
         sx={{
           display: "flex",
           justifyContent: "flex-end",
@@ -348,10 +349,12 @@ export default function CompanyList() {
               disableUnderline: true,
               startAdornment: (
                 <InputAdornment position="start">
-                  <GridSearchIcon sx={(theme) => ({ 
-                    color: theme.palette.text.primary,
-                    fontSize: "20px" 
-                  })} />
+                  <GridSearchIcon
+                    sx={(theme) => ({
+                      color: theme.palette.text.primary,
+                      fontSize: "20px",
+                    })}
+                  />
                 </InputAdornment>
               ),
               sx: (theme) => ({
@@ -371,15 +374,17 @@ export default function CompanyList() {
 
           <IconButton
             color="primary"
-            sx={(theme) => ({
-              color: theme.palette.primary.contrastText,
-              background: theme.palette.primary.main,
+            sx={{
+              color: "white",
+              background: "rgb(17, 4, 122)",
+                        backgroundColor: (theme: Theme) =>
+                          theme.palette.mode === "light" ? "rgb(17, 4, 122)" : "#353cf0",
               marginLeft: "20px",
               padding: "8px",
               "&:hover": {
-                background: theme.palette.primary.dark,
+                background: "#353cf0",
               },
-            })}
+            }}
             onClick={() => handleAdd()}
           >
             <Icon>add</Icon>
@@ -402,12 +407,18 @@ export default function CompanyList() {
             border: `1px solid ${theme.palette.divider}`,
             boxShadow: theme.shadows[1],
             "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
+              backgroundColor:
+                theme.palette.mode === "light"
+                  ? "#f7f7f7"
+                  : theme.palette.background.default,
               color: theme.palette.text.primary,
               fontSize: "14px",
             },
             "& .MuiDataGrid-columnHeader": {
-              backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
+              backgroundColor:
+                theme.palette.mode === "light"
+                  ? "#f7f7f7"
+                  : theme.palette.background.default,
             },
             "& .MuiDataGrid-columnHeaderTitle": {
               color: theme.palette.text.primary,
@@ -443,16 +454,17 @@ export default function CompanyList() {
                 border: "none",
               },
             },
-            "& .MuiDataGrid-cellCheckbox, & .MuiDataGrid-columnHeaderCheckbox": {
-              "& .MuiButtonBase-root": {
-                "&.Mui-checked": {
-                  color: "inherit",
-                },
-                "&:hover": {
-                  backgroundColor: "transparent",
+            "& .MuiDataGrid-cellCheckbox, & .MuiDataGrid-columnHeaderCheckbox":
+              {
+                "& .MuiButtonBase-root": {
+                  "&.Mui-checked": {
+                    color: "inherit",
+                  },
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                  },
                 },
               },
-            },
           })}
         />
       </Box>

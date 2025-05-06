@@ -1,7 +1,7 @@
 "use client";
 
 import useAuth from "@/hooks/useAuth";
-import theme from "@/theme/theme";
+// import theme from "@/theme/theme";
 import { Theme, SxProps } from "@mui/material/styles";
 import { PageContainer } from "@toolpad/core";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
@@ -11,16 +11,10 @@ import adminNavigation from "./navigation";
 import { NextAppProvider } from "@toolpad/core/nextjs";
 import { CompanyProvider, useCompanyContext } from "@/contexts/CompanyContext";
 import Image from "next/image";
-import {
-  Menu,
-  MenuItem,
-  Divider,
-  Button,
-  Avatar,
-  Box,
-  Typography,
-} from "@mui/material";
-import { AccountCircle, Settings, Logout } from "@mui/icons-material";
+import { createTheme } from '@mui/material/styles';
+import {Box, IconButton} from "@mui/material";
+import { NightsStay, WbSunny } from "@mui/icons-material";
+import { UserMenu } from "@/components/UserMenu";
 
 interface LayoutProps {
   window?: () => Window;
@@ -72,7 +66,10 @@ export default function AdminLayout(props: LayoutProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  // Add state for menu anchor
+  const demoWindow = window !== undefined ? window() : undefined;
+  const normalizedPathname = pathname.replace(/\/+$/, "");
+
+  // Add menu state management
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -84,9 +81,6 @@ export default function AdminLayout(props: LayoutProps) {
     setAnchorEl(null);
   };
 
-  const demoWindow = window !== undefined ? window() : undefined;
-  const normalizedPathname = pathname.replace(/\/+$/, "");
-
   const handleNavigation = (url: string | URL) => {
     if (typeof url === "string") {
       router.push(url);
@@ -96,12 +90,33 @@ export default function AdminLayout(props: LayoutProps) {
     handleMenuClose();
   };
 
+    // Add color mode state
+    const [mode, setMode] = React.useState<'light' | 'dark'>('light');
+    const colorMode = React.useMemo(
+      () => ({
+        toggleColorMode: () => {
+          setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        },
+      }),
+      [],
+    );
+  
+    // Create theme with mode
+    const theme = React.useMemo(
+      () => createTheme({
+        palette: {
+          mode,
+          // ... your existing palette config ...
+        },
+      }),
+      [mode],
+    );
+
   const dashboardStyles: SxProps<Theme> = {
+    flex: 1,
     "& .MuiAppBar-root": {
       backgroundColor: (theme: Theme) =>
-        theme.palette.mode === "light"
-          ? "#f7f7f7"
-          : "black", // Set the app bar background color
+        theme.palette.mode === "light" ? "#f7f7f7" : "black", // Set the app bar background color
       color: (theme: Theme) => theme.palette.text.primary,
       backdropFilter: "blur(6px)",
       boxShadow: "none",
@@ -119,7 +134,7 @@ export default function AdminLayout(props: LayoutProps) {
         padding: "0 20px",
         justifyContent: "space-between",
       },
-  
+
       // User menu button styling
       "& .user-menu-button": {
         padding: "4px 8px",
@@ -213,121 +228,133 @@ export default function AdminLayout(props: LayoutProps) {
     },
   };
 
-  // Custom user menu component
-  const UserMenu = () => (
-    <>
-      <Button
-        className="user-menu-button"
-        onClick={handleMenuOpen}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          color: "inherit",
-        }}
-      >
-        <Avatar
-          sx={{
-            width: 32,
-            height: 32,
-            bgcolor: (theme) => theme.palette.primary.main,
-            color: (theme) => theme.palette.primary.contrastText,
-          }}
-        >
-          {user?.name?.charAt(0)}
-        </Avatar>
-      </Button>
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleMenuClose}
-        onClick={handleMenuClose}
-      >
-        <MenuItem disabled>
-          <Box>
-            <Typography variant="subtitle2">{user?.name}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {user?.email}
-            </Typography>
-          </Box>
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={() => handleNavigation("/profile")}>
-          <AccountCircle sx={{ mr: 1.5 }} /> Profile
-        </MenuItem>
-        <MenuItem onClick={() => handleNavigation("/settings")}>
-          <Settings sx={{ mr: 1.5 }} /> Settings
-        </MenuItem>
-        <Divider />
-        <MenuItem
-          className="sign-out-item"
-          onClick={() => {
-            handleMenuClose();
-            logout();
-          }}
-        >
-          <Logout sx={{ mr: 1.5 }} /> Sign Out
-        </MenuItem>
-      </Menu>
-    </>
-  );
-
   return (
-          <NextAppProvider
-      navigation={adminNavigation}
-      branding={{
-        logo: (
-          <div
-            style={{
-              borderRadius: "15px",
-              overflow: "hidden",
-              width: 150,
-              height: 130,
-              position: "relative",
+    <NextAppProvider
+  navigation={adminNavigation}
+  branding={{
+    logo: (
+      <div style={{
+        borderRadius: "15px",
+        overflow: "hidden",
+        width: 150,
+        height: 40,
+        position: "relative",
+      }}>
+        <Image
+          src="/logo.png"
+          alt="Monitoring App"
+          fill
+          style={{ objectFit: "contain" }}
+        />
+      </div>
+    ),
+    title: "",
+    homeUrl: "/admin",
+  }}
+  router={{
+    navigate: handleNavigation,
+    pathname: normalizedPathname,
+    searchParams: new URLSearchParams(),
+  }}
+  theme={theme}
+  window={demoWindow}
+>
+  <CompanyProvider>
+    <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          minHeight: '100vh',
+          overflowX: 'hidden',
+          width: '100%' 
+        }}>
+      <DashboardLayout 
+            sx={{ 
+              flex: 1,
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'hidden', // Prevent any overflow
+              '& .MuiAppBar-root': {
+                position: 'relative',
+                zIndex: 1200,
+                width: '100%',
+              },
+              '& .MuiToolbar-root': {
+                minHeight: '64px',
+                padding: '0 24px',
+                position: 'relative',
+                width: '100%',
+              },
+              '& .MuiContainer-root': {
+                maxWidth: '100%',
+                paddingLeft: '16px',
+                paddingRight: '16px',
+              },
+              ...dashboardStyles 
+            }}
+      >
+        <LayoutContent>{children}</LayoutContent>
+        
+        {/* Enhanced Theme Toggle and User Menu */}
+        <Box
+          component="div"
+          sx={{
+            position: 'absolute',
+            right: { xs: 16, sm: 24, md: 20 },
+            top: "30px",
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            zIndex: 1300
+          }}
+        >
+          <IconButton 
+            onClick={colorMode.toggleColorMode} 
+            color="inherit"
+            sx={{ 
+              height: 42,
+              width: 42,
+              borderRadius: '50%',
+              transition: 'all 0.3s ease',
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'rgba(0, 0, 0, 0.04)',
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(0, 0, 0, 0.08)',
+                transform: 'scale(1.1)'
+              },
+              '& svg': {
+                fontSize: '1.5rem',
+                color: theme.palette.mode === 'dark'
+                  ? theme.palette.warning.light
+                  : "rgb(17, 4, 122)"
+              }
             }}
           >
-            <Image
-              src="/logo.png"
-              alt="Monitoring App"
-              fill
-              style={{
-                objectFit: "contain",
-              }}
+{theme.palette.mode === 'dark' ? (
+  <WbSunny sx={{ transition: 'all 0.3s ease' }} />
+) : (
+  <NightsStay sx={{ transition: 'all 0.3s ease' }} />
+)}
+          </IconButton>
+          
+          {user && (
+            <UserMenu
+              user={user}
+              handleMenuOpen={handleMenuOpen}
+              anchorEl={anchorEl}
+              open={open}
+              handleMenuClose={handleMenuClose}
+              handleNavigation={handleNavigation}
+              logout={logout}
             />
-          </div>
-        ),
-        title: "",
-        homeUrl: "/admin",
-      }}
-      router={{
-        navigate: handleNavigation,
-        pathname: normalizedPathname,
-        searchParams: new URLSearchParams(),
-      }}
-      theme={theme}
-      window={demoWindow}
-      session={{
-        user: user
-          ? {
-              ...user,
-              image: (<UserMenu />) as unknown as string, // Not recommended but works
-            }
-          : undefined,
-      }}
-      authentication={{
-        signIn: () => {
-          console.log("Sign in");
-        },
-        signOut: () => {
-          logout();
-        },
-      }}
-    >
-      <CompanyProvider>
-        <DashboardLayout sx={dashboardStyles}>
-          <LayoutContent>{children}</LayoutContent>
-        </DashboardLayout>
-      </CompanyProvider>
-    </NextAppProvider>
+          )}
+        </Box>
+      </DashboardLayout>
+    </Box>
+  </CompanyProvider>
+</NextAppProvider>
   );
 }

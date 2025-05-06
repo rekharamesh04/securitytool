@@ -20,6 +20,9 @@ import {
 import { useNotifications } from "@toolpad/core";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTheme } from '@mui/material/styles';
+import { Theme } from "@mui/material/styles";
+import { useRouter } from 'next/navigation';
 
 type FormData = {
   email: string;
@@ -29,6 +32,8 @@ type FormData = {
 
 export default function SignIn() {
   const { login } = useCompanyAuth();
+  const theme = useTheme();
+  const router = useRouter();
   // const theme = useTheme();
   const {
     register,
@@ -54,6 +59,31 @@ export default function SignIn() {
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+
+  const HomeIcon = ({ theme }: { theme: Theme }) => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+        stroke={theme.palette.mode === 'dark' ? '#b197fc' : '#6a11cb'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 22V12H15V22"
+        stroke={theme.palette.mode === 'dark' ? '#b197fc' : '#6a11cb'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 
   return (
     <Box
@@ -82,8 +112,84 @@ export default function SignIn() {
           background: "radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 90%)",
           zIndex: 0,
         },
+        position: 'relative',
       }}
     >
+
+<Box
+        onClick={() => router.push('/')}
+        sx={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          cursor: 'pointer',
+          padding: '12px 20px',
+          borderRadius: '12px',
+          background: 'rgba(255, 255, 255, 0.85)',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          boxShadow: '0 4px 15px -3px rgba(106, 17, 203, 0.3)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          zIndex: 10,
+          animation: "fadeIn 0.6s ease-out forwards",
+          backdropFilter: 'blur(8px)',
+          "&:hover": {
+            transform: 'translateY(-3px) scale(1.02)',
+            background: 'rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 8px 25px -5px rgba(106, 17, 203, 0.4), 0 4px 10px -4px rgba(106, 17, 203, 0.3)',
+            "& .home-icon": {
+              transform: 'scale(1.2) rotate(-5deg)',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))'
+            },
+            "& .home-text": {
+              letterSpacing: '0.03em',
+              textShadow: '0 2px 8px rgba(106, 17, 203, 0.4)'
+            }
+          },
+        }}
+      >
+        <Box 
+          className="home-icon" 
+          sx={{ 
+            transition: 'all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)',
+            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+          }}
+        >
+          <HomeIcon theme={theme} />
+        </Box>
+        <Typography
+          className="home-text"
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            fontFamily: "'Inter', sans-serif",
+            letterSpacing: '0.02em',
+            background: 'linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative',
+            '&:after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '-2px',
+              left: 0,
+              width: '0%',
+              height: '2px',
+              background: 'linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)',
+              transition: 'width 0.3s ease',
+            },
+            '&:hover:after': {
+              width: '100%'
+            }
+          }}
+        >
+          Homepage
+        </Typography>
+      </Box>
+
       <Card
         elevation={10}
         sx={{

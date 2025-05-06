@@ -19,6 +19,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { useNotifications } from "@toolpad/core";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTheme } from '@mui/material/styles';
+import { Theme } from "@mui/material/styles";
+import { useRouter } from 'next/navigation';
 
 type FormData = {
   email: string;
@@ -36,6 +39,8 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const notifications = useNotifications();
+  const theme = useTheme();
+  const router = useRouter();
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
@@ -49,9 +54,55 @@ export default function SignIn() {
     }
   };
 
+  const ArrowIcon = ({ theme }: { theme: Theme }) => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        transition: "transform 0.2s ease",
+      }}
+    >
+      <path
+        d="M9 6L15 12L9 18"
+        stroke={theme.palette.mode === 'dark' ? '#818cf8' : '#6366f1'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+
+  const HomeIcon = ({ theme }: { theme: Theme }) => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+        stroke={theme.palette.mode === 'dark' ? '#a5b4fc' : '#6366f1'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 22V12H15V22"
+        stroke={theme.palette.mode === 'dark' ? '#a5b4fc' : '#6366f1'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 
   return (
     <Box
@@ -80,8 +131,104 @@ export default function SignIn() {
           background: "radial-gradient(circle at 10% 20%, rgba(56, 182, 255, 0.1) 0%, rgba(15, 23, 42, 0.8) 90%)",
           zIndex: 0,
         },
+        position: 'relative',
       }}
     >
+<Box
+  onClick={() => router.push('/')}
+  sx={{
+    position: 'absolute',
+    top: 24,
+    left: 24,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    cursor: 'pointer',
+    padding: '12px 20px',
+    borderRadius: '12px',
+    background: (theme) => 
+      theme.palette.mode === 'dark' 
+        ? 'rgba(255, 255, 255, 0.15)' 
+        : 'rgba(255, 255, 255, 0.85)',
+    border: (theme) => 
+      `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(228, 228, 231, 0.5)'}`,
+    boxShadow: (theme) => 
+      theme.palette.mode === 'dark'
+        ? '0 4px 15px -3px rgba(165, 180, 252, 0.3)'
+        : '0 4px 15px -3px rgba(99, 102, 241, 0.2)',
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    zIndex: 10,
+    animation: "fadeIn 0.6s ease-out forwards",
+    backdropFilter: 'blur(8px)',
+    "&:hover": {
+      transform: 'translateY(-3px) scale(1.02)',
+      background: (theme) => 
+        theme.palette.mode === 'dark' 
+          ? 'rgba(255, 255, 255, 0.25)' 
+          : 'rgba(255, 255, 255, 0.95)',
+      boxShadow: (theme) => 
+        theme.palette.mode === 'dark'
+          ? '0 8px 25px -5px rgba(165, 180, 252, 0.4), 0 4px 10px -4px rgba(165, 180, 252, 0.3)'
+          : '0 8px 25px -5px rgba(99, 102, 241, 0.3), 0 4px 10px -4px rgba(99, 102, 241, 0.2)',
+      "& .home-icon": {
+        transform: 'scale(1.2) rotate(-5deg)',
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))'
+      },
+      "& .home-text": {
+        letterSpacing: '0.03em',
+        textShadow: (theme) => 
+          theme.palette.mode === 'dark'
+            ? '0 2px 8px rgba(165, 180, 252, 0.5)'
+            : '0 2px 8px rgba(99, 102, 241, 0.3)'
+      }
+    },
+  }}
+>
+  <Box 
+    className="home-icon" 
+    sx={{ 
+      transition: 'all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)',
+      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+    }}
+  >
+    <HomeIcon theme={theme} />
+  </Box>
+  <Typography
+    className="home-text"
+    variant="h6"
+    sx={{
+      fontWeight: 700,
+      fontFamily: "'Inter', sans-serif",
+      letterSpacing: '0.02em',
+      background: (theme) => 
+        theme.palette.mode === 'dark'
+          ? 'linear-gradient(90deg, #e0e7ff 0%, #a5b4fc 100%)'
+          : 'linear-gradient(90deg, #4f46e5 0%, #6366f1 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      position: 'relative',
+      '&:after': {
+        content: '""',
+        position: 'absolute',
+        bottom: '-2px',
+        left: 0,
+        width: '0%',
+        height: '2px',
+        background: (theme) => 
+          theme.palette.mode === 'dark'
+            ? 'linear-gradient(90deg, #a5b4fc 0%, #818cf8 100%)'
+            : 'linear-gradient(90deg, #6366f1 0%, #4f46e5 100%)',
+        transition: 'width 0.3s ease',
+      },
+      '&:hover:after': {
+        width: '100%'
+      }
+    }}
+  >
+    Homepage
+  </Typography>
+</Box>
       <Box
         sx={{
           animation: "fadeInUp 0.5s ease-out forwards",
@@ -434,42 +581,92 @@ export default function SignIn() {
                 )}
               </Button>
             </Box>
+            <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    mt: 3,
+    mb: 2,
+    animation: "fadeIn 0.4s ease-out 0.6s forwards",
+    opacity: 0,
+  }}
+>
+  <Box
+    onClick={() => window.location.href = '/company/auth/sign-in'}
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
+      cursor: "pointer",
+      padding: "8px 16px",
+      borderRadius: "8px",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      background: (theme) => 
+        theme.palette.mode === 'dark' 
+          ? 'rgba(39, 39, 42, 0.5)' 
+          : 'rgba(244, 244, 245, 0.5)',
+      border: (theme) => 
+        `1px solid ${theme.palette.mode === 'dark' ? 'rgba(63, 63, 70, 0.5)' : 'rgba(228, 228, 231, 0.5)'}`,
+      "&:hover": {
+        background: (theme) => 
+          theme.palette.mode === 'dark' 
+            ? 'rgba(63, 63, 70, 0.7)' 
+            : 'rgba(244, 244, 245, 0.8)',
+        borderColor: (theme) => 
+          theme.palette.mode === 'dark' ? '#6366f1' : '#818cf8',
+        transform: "translateY(-1px)",
+        boxShadow: (theme) => 
+          theme.palette.mode === 'dark'
+            ? '0 4px 6px -1px rgba(99, 102, 241, 0.2), 0 2px 4px -2px rgba(99, 102, 241, 0.2)'
+            : '0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -2px rgba(79, 70, 229, 0.1)',
+      },
+    }}
+  >
+    <Typography
+      component="span"
+      sx={{
+        color: (theme) => theme.palette.mode === 'dark' ? 'white' : '#6b7280',
+        fontSize: "0.875rem",
+        fontWeight: 400,
+        fontFamily: "'Inter', sans-serif",
+        letterSpacing: "0.025em",
+        transition: "color 0.2s ease",
+      }}
+    >
+      Login to
+    </Typography>
+    <Box
+      sx={{
+        width: "1px",
+        height: "16px",
+        background: (theme) => theme.palette.mode === 'dark' ? '#3f3f46' : '#e4e4e7',
+        mx: 0.5,
+      }}
+    />
+    <Typography
+      component="span"
+      sx={{
+        color: (theme) => theme.palette.mode === 'dark' ? '#818cf8' : '#6366f1',
+        fontSize: "0.875rem",
+        fontWeight: 600,
+        fontFamily: "'Inter', sans-serif",
+        letterSpacing: "0.025em",
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+        transition: "all 0.2s ease",
+        "&:hover": {
+          color: (theme) => theme.palette.mode === 'dark' ? '#a5b4fc' : '#4f46e5',
+        },
+      }}
+    >
+      Company Dashboard
+      <ArrowIcon theme={theme} />
+    </Typography>
+  </Box>
+</Box>
           </CardContent>
-{/* 
-          <Box
-            sx={{
-              padding: "0 32px 24px",
-              textAlign: "center",
-              animation: "fadeIn 0.4s ease-out 0.6s forwards",
-              opacity: 0,
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#a1a1aa", // Zinc-300
-                fontSize: "0.875rem",
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              Don't have an account?{" "}
-              <Link
-                href="/admin/auth/sign-up"
-                underline="none"
-                sx={{
-                  color: "#0ea5e9", // Sky-500
-                  fontWeight: 600,
-                  fontFamily: "'Inter', sans-serif",
-                  transition: "color 0.2s ease",
-                  "&:hover": {
-                    color: "#6366f1", // Indigo-500
-                  },
-                }}
-              >
-                Sign up
-              </Link>
-            </Typography>
-          </Box> */}
         </Card>
       </Box>
 
