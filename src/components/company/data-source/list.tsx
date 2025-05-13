@@ -10,12 +10,12 @@ import {
   TextField,
   Typography,
   Paper,
+  // Alert,
   Button,
   Menu,
   MenuItem,
   Badge,
   Stack,
-  // Alert,
 } from "@mui/material";
 import {
   DataGrid,
@@ -26,11 +26,12 @@ import {
   GridSortModel,
 } from "@mui/x-data-grid";
 import { useDialogs, useNotifications } from "@toolpad/core";
+// import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { mutate } from "swr";
-import { fetchUrl } from "./constant";
+import { fetchUrl } from '@/components/company/data-source/constant';
 import theme from "@/theme/theme";
-import DataSourceForm from "./form";
+import DataSourceForm from "@/components/company/data-source/form";
 import { useCompanyContext } from "@/contexts/CompanyContext";
 import { useRouter } from "next/navigation";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -66,6 +67,7 @@ export default function DataSource() {
   const [identityName, setIdentityName] = useState<string>("");
   const [trustLevel, setTrustLevel] = useState<string>("");
 
+  // Menu anchor states
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentFilter, setCurrentFilter] = useState<string>("");
 
@@ -134,10 +136,11 @@ export default function DataSource() {
     }
   };
 
+  // Debounce search text
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchText(searchText);
-    }, 500);
+    }, 500); // 500ms delay
 
     return () => {
       clearTimeout(handler);
@@ -158,10 +161,13 @@ export default function DataSource() {
       searchParams.append("order", sortModel[0].sort ?? "");
     }
 
+    // Add company filter if company is selected
     if (selectedCompany?._id) {
+      // Convert _id to string explicitly
       searchParams.append("company", selectedCompany._id.toString());
     }
 
+    // Add filter parameters
     if (cloudProvider) searchParams.append("cloudProvider", cloudProvider);
     if (infrastructure) searchParams.append("infrastructure", infrastructure);
     if (account) searchParams.append("account", account);
@@ -187,7 +193,6 @@ export default function DataSource() {
   ]);
 
   const { data, isLoading } = useSWR(`${fetchUrl}?${params}`, getFetcher);
-
   const handleAdd = async () => {
     const result = await dialogs.open((props) => (
       <DataSourceForm {...props} id="new" />
@@ -203,7 +208,7 @@ export default function DataSource() {
     return {
       ...data,
       data: data.data.filter(
-        (item: any) => item.company._id === selectedCompany._id.toString()
+        (item: any) => item.company._id === selectedCompany._id.toString() // Compare nested _id
       ),
       total: data.data.filter(
         (item: any) => item.company._id === selectedCompany._id.toString()
@@ -221,7 +226,9 @@ export default function DataSource() {
       if (confirmed) {
         try {
           const response = await axiosInstance.delete(`${fetchUrl}/${id}`);
-          mutate(`${fetchUrl}?${params}`, { revalidate: true });
+          // Revalidate the data after deleting the category
+          mutate(`${fetchUrl}?${params}`, { revalidate: true }); //use stable key
+
           const { data } = response;
           notifications.show(data.message, { severity: "success" });
         } catch (err) {
@@ -232,6 +239,7 @@ export default function DataSource() {
     [dialogs, notifications, params]
   );
 
+  // Handle editing of a row
   const handleEdit = useCallback(
     async (id: string) => {
       const result = await dialogs.open((props) => (
@@ -286,21 +294,23 @@ export default function DataSource() {
             | "MEDIUM"
             | "LOW"
             | "CRITICAL"
-            | "NORMAL";
+            | "NORMAL"; // Type assertion
 
+          // Define color mapping for sensitivity types
           const colorMap: Record<
             "RESTRICTED" | "MEDIUM" | "LOW" | "CRITICAL" | "NORMAL",
             string
           > = {
-            RESTRICTED: "#d32f2f",
-            MEDIUM: "#ffa000",
-            LOW: "#388e3c",
-            CRITICAL: "#c2185b",
-            NORMAL: "#1976d2",
+            RESTRICTED: "#d32f2f", // Red for High Sensitivity
+            MEDIUM: "#ffa000", // Orange for Medium Sensitivity
+            LOW: "#388e3c", // Green for Low Sensitivity
+            CRITICAL: "#c2185b", // Pink for Critical Sensitivity
+            NORMAL: "#1976d2", // Blue for Normal Sensitivity
           };
 
-          const backgroundColor = colorMap[sensitivity] || "#9e9e9e";
-          const textColor = "#000";
+          // Get the appropriate color based on sensitivity value
+          const backgroundColor = colorMap[sensitivity] || "#9e9e9e"; // Default grey for unknown sensitivity
+          const textColor = "#000"; // White text for contrast
 
           return (
             <Chip
@@ -310,7 +320,7 @@ export default function DataSource() {
                 letterSpacing: 0.5,
                 borderRadius: "6px",
                 color: textColor,
-                backgroundColor: `${backgroundColor}30`,
+                backgroundColor: `${backgroundColor}30`, // 50% opacity for background
                 border: `1px solid ${backgroundColor}`,
                 height: "24px",
                 padding: "0 10px",
@@ -336,12 +346,13 @@ export default function DataSource() {
         renderCell: (params) => {
           const items = params.row.data?.split(",") || [];
 
+          // Color map for known tags
           const colorMap: Record<string, string> = {
-            PERSONAL: "#3f51b5",
-            FINANCIAL: "#009688",
-            HEALTH: "#e91e63",
-            LEGAL: "#ff9800",
-            INTERNAL: "#607d8b",
+            PERSONAL: "#3f51b5", // Indigo
+            FINANCIAL: "#009688", // Teal
+            HEALTH: "#e91e63", // Pink
+            LEGAL: "#ff9800", // Orange
+            INTERNAL: "#607d8b", // Blue Grey
           };
 
           return (
@@ -365,7 +376,7 @@ export default function DataSource() {
                       letterSpacing: 0.5,
                       borderRadius: "6px",
                       color: baseColor,
-                      backgroundColor: `${baseColor}20`,
+                      backgroundColor: `${baseColor}20`, // ~12.5% opacity
                       border: `1px solid ${baseColor}`,
                       height: "24px",
                     }}
@@ -376,6 +387,7 @@ export default function DataSource() {
           );
         },
       },
+
       {
         field: "scanStatus",
         headerName: "SCAN STATUS",
@@ -386,23 +398,51 @@ export default function DataSource() {
 
           return (
             <Button
-              variant="outlined"
-              color={isScanned ? "success" : "inherit"}
-              sx={{
-                px: 2,
-                py: 0.5,
-                fontWeight: 500,
-                fontSize: "0.75rem",
-                borderRadius: "20px",
-                textTransform: "capitalize",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isScanned ? "Rescan" : "Scan"}
-            </Button>
-          );
-        },
+            variant="outlined"
+            color={isScanned ? "success" : "inherit"}
+            // onClick={() => {
+            //   console.log(`Clicked on status: ${status}`);
+            // }}
+            sx={{
+              px: 2,
+              py: 0.5,
+              fontWeight: 500,
+              fontSize: "0.75rem",
+              borderRadius: "20px",
+              textTransform: "capitalize",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {isScanned ? "Rescan" : "Scan"}
+          </Button>
+        );
       },
+    }
+
+      // {
+      //   field: "actions",
+      //   headerName: "Actions",
+      //   width: 120,
+      //   align: "center",
+      //   renderCell: ({ row }) => (
+      //     <Box display="flex" gap={0.5} sx={{ paddingTop: 2 }}>
+      //       <Tooltip title="Edit">
+      //         <IconButton onClick={() => handleEdit(row._id)} size="small">
+      //           <Icon fontSize="small">edit</Icon>
+      //         </IconButton>
+      //       </Tooltip>
+      //       <Tooltip title="Delete">
+      //         <IconButton
+      //           onClick={() => handleDelete(row._id)}
+      //           size="small"
+      //           color="error"
+      //         >
+      //           <Icon fontSize="small">delete</Icon>
+      //         </IconButton>
+      //       </Tooltip>
+      //     </Box>
+      //   ),
+      // },
     ],
     [handleDelete, handleEdit, theme, selectedCompany]
   );
@@ -410,7 +450,7 @@ export default function DataSource() {
   const handleViewDetails = () => {
     router.push("/admin/company/data-source/dataDetails");
   };
-
+  // Filter chip data
   const activeFilters = [
     { name: "Cloud Provider", value: cloudProvider },
     { name: "Infrastructure", value: infrastructure },
@@ -423,6 +463,7 @@ export default function DataSource() {
 
   const filterCount = activeFilters.length;
 
+  // Options for each filter (you can replace with your actual options)
   const filterOptions: Record<string, string[]> = {
     "Cloud Provider": ["AWS", "Azure", "GCP", "Alibaba Cloud"],
     Infrastructure: ["Production", "Development", "Staging", "Test"],
@@ -463,7 +504,7 @@ export default function DataSource() {
     setTrustLevel("");
   };
 
-  //  if (!selectedCompany)
+  // if (!selectedCompany)
   //   return <Alert severity="warning">Please Set Company Context</Alert>;
 
   return (
@@ -476,13 +517,24 @@ export default function DataSource() {
           mb: 2,
         }}
       >
-        <Box
-          display="flex"
+        {/* <Typography
+          sx={{
+            fontSize: "1.35rem !important",
+            color: "#30312F !important",
+            fontWeight: "600 !important",
+            position: "relative",
+            top: "2.5rem",
+          }}
+        >
+          Company: {selectedCompany?.name}
+        </Typography> */}
+
+<Box display="flex"
           alignItems="center"
           justifyContent="flex-end"
-          gap={2}
-          sx={{ ml: "auto" }}
-        >
+          gap={1}
+          sx={{ ml: "auto" }}>
+
           <TextField
             placeholder="Search data sources..."
             value={searchText}
@@ -640,21 +692,11 @@ export default function DataSource() {
             }}
           />
 
-          <Button
+        <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAdd}
-            sx={{
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              boxShadow: "none",
-              "&:hover": {
-                boxShadow: (theme) =>
-                  `0 2px 4px ${alpha(theme.palette.primary.main, 0.2)}`,
-              },
-            }}
+            sx={{ textTransform: "none" }}
           >
             Add
           </Button>
@@ -663,18 +705,6 @@ export default function DataSource() {
             variant="outlined"
             startIcon={<FilterListIcon />}
             onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              borderColor: (theme) => theme.palette.divider,
-              "&:hover": {
-                borderColor: (theme) => theme.palette.primary.main,
-                backgroundColor: (theme) =>
-                  alpha(theme.palette.primary.main, 0.04),
-              },
-            }}
           >
             Filters {filterCount > 0 ? `(${filterCount})` : ""}
           </Button>
@@ -684,36 +714,15 @@ export default function DataSource() {
               variant="text"
               color="error"
               onClick={handleClearAllFilters}
-              sx={{
-                textTransform: "none",
-                borderRadius: "8px",
-                px: 2,
-                py: 1,
-                "&:hover": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.error.main, 0.08),
-                },
-              }}
             >
-              Clear All
+              Clear All Filters
             </Button>
           )}
 
           <Button
             variant="outlined"
             onClick={handleViewDetails}
-            sx={{
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              borderColor: (theme) => theme.palette.divider,
-              "&:hover": {
-                borderColor: (theme) => theme.palette.primary.main,
-                backgroundColor: (theme) =>
-                  alpha(theme.palette.primary.main, 0.04),
-              },
-            }}
+            sx={{ textTransform: "none" }}
           >
             Columns
           </Button>
@@ -721,24 +730,16 @@ export default function DataSource() {
           <Button
             variant="outlined"
             startIcon={<DownloadIcon />}
-            onClick={() => console.log("Downloading...")}
-            sx={{
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              borderColor: (theme) => theme.palette.divider,
-              "&:hover": {
-                borderColor: (theme) => theme.palette.primary.main,
-                backgroundColor: (theme) =>
-                  alpha(theme.palette.primary.main, 0.04),
-              },
+            onClick={() => {
+              // Add your download logic here
+              console.log("Downloading...");
             }}
           >
             Export CSV
           </Button>
         </Box>
       </Box>
+
 
       <Paper
         sx={(theme) => ({
@@ -760,6 +761,7 @@ export default function DataSource() {
         </Badge>
 
         <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", rowGap: 1 }}>
+          {/* Filter buttons with dropdown indicators */}
           {[
             "Cloud Provider",
             "Infrastructure",
@@ -779,9 +781,6 @@ export default function DataSource() {
                 textTransform: "none",
                 borderColor: theme.palette.divider,
                 color: theme.palette.text.primary,
-                borderRadius: "6px",
-                px: 1.5,
-                py: 0.5,
                 "&:hover": {
                   borderColor: theme.palette.primary.main,
                   backgroundColor: theme.palette.action.hover,
@@ -802,12 +801,8 @@ export default function DataSource() {
                 textTransform: "none",
                 color: theme.palette.text.secondary,
                 ml: 1,
-                borderRadius: "6px",
-                px: 1.5,
-                py: 0.5,
                 "&:hover": {
                   color: theme.palette.error.main,
-                  backgroundColor: alpha(theme.palette.error.main, 0.08),
                 },
               })}
             >
@@ -816,6 +811,7 @@ export default function DataSource() {
           )}
         </Stack>
 
+        {/* Active filter chips - shown in a separate row when space is limited */}
         <Box
           sx={{
             display: "flex",
@@ -860,6 +856,7 @@ export default function DataSource() {
             columns={columns}
             rowCount={filteredData?.total || 0}
             loading={isLoading}
+            // ← here’s the checkbox column
             checkboxSelection
             rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={(newModel) =>
@@ -876,21 +873,17 @@ export default function DataSource() {
               border: `1px solid ${theme.palette.divider}`,
               boxShadow: theme.shadows[1],
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor:
-                  theme.palette.mode === "light"
-                    ? "#f7f7f7"
-                    : theme.palette.background.default,
+                backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
                 color: theme.palette.text.primary,
                 fontSize: "14px",
               },
+               // ✅ Grey header cell background (stronger selector)
               "& .MuiDataGrid-columnHeader": {
-                backgroundColor:
-                  theme.palette.mode === "light"
-                    ? "#f0f0f0"
-                    : theme.palette.background.default,
-                color: "#424242",
+                backgroundColor: theme.palette.mode === 'light' ? '#f0f0f0' : theme.palette.background.default,
+                color: "#424242", // Grey text color
                 fontWeight: "600",
               },
+
               "& .MuiDataGrid-columnHeaderTitle": {
                 color: theme.palette.text.primary,
                 fontWeight: 600,

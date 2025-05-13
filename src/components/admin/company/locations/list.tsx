@@ -10,6 +10,7 @@ import {
   IconButton,
   InputAdornment,
   TextField,
+  Tooltip,
   alpha,
 } from "@mui/material";
 import {
@@ -24,6 +25,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { fetchUrl } from "./constant";
 import LocationForm from "./form";
+import { Theme } from "@mui/material/styles";
+import { Add } from "@mui/icons-material";
 
 export default function LocationList() {
   const router = useRouter();
@@ -212,122 +215,7 @@ export default function LocationList() {
 
   return (
     <Box>
-      {/* <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end", // 🔥 aligns inner Box to the end (right)
-          mb: 2,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "#FFFFFF",
-            borderRadius: "999px",
-            padding: "10px 15px",
-            width: 350,
-            boxShadow: `
-                    rgba(100, 134, 169, 0.18) 24px 17px 40px 4px,
-                    rgba(100, 134, 169, 0.15) -12px -10px 30px 2px  `,
-            marginBottom: "10px",
-          }}
-        >
-          <TextField
-            placeholder="Search..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            variant="standard"
-            fullWidth
-            InputProps={{
-              disableUnderline: true,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <GridSearchIcon sx={{ color: "black", fontSize: "20px" }} />
-                </InputAdornment>
-              ),
-              sx: {
-                fontSize: "1rem",
-                color: "black",
-                fontWeight: "500",
-                fontFamily: "monospace",
-              },
-            }}
-            sx={{
-              background: "#edf3ff",
-              borderRadius: "30px",
-              padding: "3px 30px 3px 10px",
-              maxWidth: "100%",
-            }}
-          />
-
-          <IconButton
-            color="primary"
-            sx={{
-              color: "white",
-              background: "rgb(17, 4, 122)",
-              marginLeft: "20px",
-              padding: "8px",
-              "&:hover": {
-                background: "rgb(17, 4, 122)", // 👈 Keeps the same background on hover
-                color: "white", // 👈 Prevents color change
-              },
-            }}
-            onClick={() => handleAdd()}
-          >
-            <Icon>add</Icon>
-          </IconButton>
-        </Box>
-      </Box>
-
-      <Box height={400}>
-        <DataGrid
-          rows={data?.data || []}
-          columns={columns}
-          rowCount={data?.total || 0}
-          paginationMode="server"
-          sortingMode="server"
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          onSortModelChange={setSortModel}
-          getRowId={(row) => row._id}
-          sx={{
-            border: "solid 1px rgb(212, 212, 212)",
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)', // Add box shadow here
-            // This targets the entire header container
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f7f7f7", // Red background for header
-              color: "black", // White text for better contrast
-              fontSize: "14px",
-            },
-            // This targets individual header cells
-            "& .MuiDataGrid-columnHeader": {
-              backgroundColor: "#f7f7f7",
-            },
-            // This targets the header titles
-            "& .MuiDataGrid-columnHeaderTitle": {
-              color: "black",
-              fontWeight: "600",
-            },
-            // This targets the sort icon
-            "& .MuiDataGrid-sortIcon": {
-              color: "black",
-            },
-            // This targets the menu icon
-            "& .MuiDataGrid-menuIcon": {
-              color: "black",
-            },
-            // This targets the column separator
-            "& .MuiDataGrid-columnSeparator": {
-              color: "rgba(224, 224, 224, 1)",
-            },
-            "& .MuiDataGrid-columnHeader:focus-within": {
-              outline: "none",
-            },
-          }}
-        />
-      </Box> */}
-            <Box
+      <Box
         sx={{
           display: "flex",
           justifyContent: "flex-end",
@@ -338,110 +226,225 @@ export default function LocationList() {
           sx={(theme) => ({
             display: "flex",
             alignItems: "center",
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: "999px",
-            padding: "10px 15px",
-            width: 350,
-            boxShadow: theme.shadows[3],
-            marginBottom: "10px",
+            backgroundColor:
+              theme.palette.mode === "light"
+                ? alpha(theme.palette.primary.light, 0.2)
+                : alpha(theme.palette.primary.dark, 0.2),
+            borderRadius: "50px",
+            padding: "8px 16px",
+            width: 380,
+            boxShadow:
+              "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "&:hover": {
+              boxShadow:
+                "0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.08)",
+              transform: "translateY(-1px)",
+            },
           })}
         >
           <TextField
             placeholder="Search..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            variant="standard"
+            variant="outlined"
             fullWidth
+            size="small"
             InputProps={{
-              disableUnderline: true,
               startAdornment: (
                 <InputAdornment position="start">
-                  <GridSearchIcon sx={(theme) => ({ 
-                    color: theme.palette.text.primary,
-                    fontSize: "20px" 
-                  })} />
+                  <GridSearchIcon
+                    sx={{
+                      color: (theme) => theme.palette.text.secondary,
+                      fontSize: "20px",
+                      marginLeft: "10px"
+                    }}
+                  />
                 </InputAdornment>
               ),
-              sx: (theme) => ({
-                fontSize: "1rem",
-                color: theme.palette.text.primary,
-                fontWeight: "500",
-                fontFamily: "monospace",
-              }),
+              sx: {
+                  fontSize: "0.95rem",
+                  background: (theme: Theme) =>
+                    theme.palette.mode === "light" ? "#dee7ff" : "black",
+                  borderRadius: "25px",
+                  padding: "4px 0px",
+                boxShadow: "0 2px 4px rgba(12, 7, 7, 0.1) inset",
+                "&:hover": {
+                  backgroundColor: (theme) =>
+                    alpha(theme.palette.background.paper, 0.9),
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2) inset",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: (theme) => theme.palette.background.paper,
+                  boxShadow: (theme) =>
+                    `0 0 0 2px ${theme.palette.primary.light}, 0 2px 4px rgba(0, 0, 0, 0.2) inset`,
+                },
+              },
             }}
-            sx={(theme) => ({
-              background: alpha(theme.palette.primary.light, 0.1),
-              borderRadius: "30px",
-              padding: "3px 30px 3px 10px",
-              maxWidth: "100%",
-            })}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: (theme) =>
+                    alpha(theme.palette.primary.main, 0.3),
+                },
+                "&:hover fieldset": {
+                  borderColor: (theme) => theme.palette.primary.main,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: (theme) => theme.palette.primary.main,
+                  boxShadow: (theme) =>
+                    `0 0 0 2px ${theme.palette.primary.light}`,
+                },
+              },
+              flex: 1,
+              mr: 2,
+            }}
           />
 
-          <IconButton
-            color="primary"
-            sx={(theme) => ({
-              color: theme.palette.primary.contrastText,
-              background: theme.palette.primary.main,
-              marginLeft: "20px",
-              padding: "8px",
-              "&:hover": {
-                background: theme.palette.primary.dark,
-              },
-            })}
-            onClick={() => handleAdd()}
-          >
-            <Icon>add</Icon>
-          </IconButton>
+          <Tooltip title="Add New Company" arrow>
+            <IconButton
+              color="primary"
+              sx={{
+                color: "white",
+                background: (theme) =>
+                  `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                padding: "10px",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow:
+                  "0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)",
+                "&:hover": {
+                  transform: "scale(1.1) translateY(-2px)",
+                  boxShadow:
+                    "0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2)",
+                  background: (theme) =>
+                    `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                },
+                "&:active": {
+                  transform: "scale(0.98) translateY(0)",
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+                },
+              }}
+              onClick={() => handleAdd()}
+            >
+              <Add sx={{ fontSize: "1.5rem" }} />
+            </IconButton>
+          </Tooltip>
         </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: 3,
+          }}
+        ></Box>
       </Box>
 
-      <Box height={400}>
-        <DataGrid
-          rows={data?.data || []}
-          columns={columns}
-          rowCount={data?.total || 0}
-          paginationMode="server"
-          sortingMode="server"
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          onSortModelChange={setSortModel}
-          getRowId={(row) => row._id}
-          sx={(theme) => ({
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: theme.shadows[1],
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
-              color: theme.palette.text.primary,
-              fontSize: "14px",
-            },
-            "& .MuiDataGrid-columnHeader": {
-              backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
-            },
-            "& .MuiDataGrid-columnHeaderTitle": {
-              color: theme.palette.text.primary,
-              fontWeight: "600",
-            },
-            "& .MuiDataGrid-sortIcon": {
-              color: theme.palette.text.primary,
-            },
-            "& .MuiDataGrid-menuIcon": {
-              color: theme.palette.text.primary,
-            },
-            "& .MuiDataGrid-columnSeparator": {
-              color: theme.palette.divider,
-            },
-            "& .MuiDataGrid-columnHeader:focus-within": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: `1px solid ${theme.palette.divider}`,
-            },
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: alpha(theme.palette.primary.light, 0.1),
-            },
-          })}
-        />
-      </Box>
+<Box 
+  height={400} 
+  sx={{ 
+    borderRadius: 2,
+    border: (theme) => `1px solid ${theme.palette.mode === 'light' ? '#C1C3C0' : '#A8ABA7'}`,
+    overflow: 'hidden', // This ensures the border radius is applied properly
+    boxShadow: (theme) => theme.shadows[2],
+  }}
+>
+  <DataGrid
+    rows={data?.data || []}
+    columns={columns}
+    rowCount={data?.total || 0}
+    paginationMode="server"
+    sortingMode="server"
+    paginationModel={paginationModel}
+    onPaginationModelChange={setPaginationModel}
+    onSortModelChange={setSortModel}
+    getRowId={(row) => row._id}
+    sx={(theme) => ({
+      // Remove border from DataGrid since we're applying it to the Box
+      border: 'none',
+      "& .MuiDataGrid-main": {
+        border: (theme: Theme) =>
+            theme.palette.mode === "light" ? "black" : "white",
+        borderBottomLeftRadius: 6,
+        borderBottomRightRadius: 6,
+      },
+      "& .MuiDataGrid-columnHeaders": {
+        backgroundColor:
+          theme.palette.mode === "light"
+            ? "#2c3e50"
+            : theme.palette.grey[800],
+        color: theme.palette.common.white,
+        fontSize: "14px",
+        borderTopLeftRadius: 0, // Now handled by the Box container
+        borderTopRightRadius: 0,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+      },
+      "& .MuiDataGrid-columnHeader": {
+         backgroundColor:
+          theme.palette.mode === "light"
+            ? "#f7f7f7"
+            : "#40413F",
+        borderRight: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+        "&:last-child": {
+          borderRight: "none",
+        },
+      },
+      "& .MuiDataGrid-columnHeaderTitle": {
+        color: (theme: Theme) =>
+            theme.palette.mode === "light" ? "black" : "white",
+        fontWeight: "600",
+      },
+      "& .MuiDataGrid-sortIcon": {
+        color: (theme: Theme) =>
+            theme.palette.mode === "light" ? "white" : "black",
+        backgroundColor: theme.palette.mode === "light" ? "#40413F" : "#F2F3F2",
+        borderRadius: "10px"
+      },
+      "& .MuiDataGrid-menuIcon": {
+        color: theme.palette.common.white,
+      },
+      "& .MuiDataGrid-iconButtonContainer": {
+        visibility: "visible !important",
+      },
+      "& .MuiDataGrid-columnSeparator": {
+        color: theme.palette.divider,
+        display: "none",
+      },
+      "& .MuiDataGrid-columnHeader:focus-within": {
+        outline: "none",
+      },
+      "& .MuiDataGrid-cell": {
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        borderRight: `1px solid ${theme.palette.divider}`,
+        "&:last-child": {
+          borderRight: "none",
+        },
+      },
+      "& .MuiDataGrid-cellContent": {
+        padding: "8px 0",
+      },
+      "& .MuiDataGrid-row": {
+        "&:nth-of-type(even)": {
+          backgroundColor:
+            theme.palette.mode === "light"
+              ? alpha(theme.palette.grey[100], 0.5)
+              : alpha(theme.palette.grey[900], 0.5),
+        },
+        "&:hover": {
+          backgroundColor: alpha(theme.palette.primary.light, 0.1),
+        },
+      },
+      "& .MuiDataGrid-footerContainer": {
+        borderTop: `2px solid ${theme.palette.divider}`,
+        borderBottomLeftRadius: 0, // Now handled by the Box container
+        borderBottomRightRadius: 0,
+      },
+      "& .MuiTablePagination-root": {
+        color: theme.palette.text.primary,
+      },
+    })}
+  />
+</Box>
     </Box>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 // import { AccountCircle, Settings } from "@mui/icons-material";
 import { Logout, Email } from "@mui/icons-material";
+import { Theme } from "@mui/material/styles";
 
 export const UserMenu = ({
   user,
@@ -50,8 +51,10 @@ export const UserMenu = ({
         sx={{
           width: 42,
           height: 42,
-          bgcolor: (theme) => theme.palette.primary.main,
-          color: (theme) => theme.palette.primary.contrastText,
+          backgroundColor: (theme: Theme) =>
+                      theme.palette.mode === "light" ? "#375199" : "#4a6ccc",
+          color: (theme: Theme) =>
+                          theme.palette.mode === "light" ? "white" : "white",
           fontSize: "1.25rem",
           fontWeight: 500,
         }}
