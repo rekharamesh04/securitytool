@@ -15,6 +15,7 @@ import {
   MenuItem,
   Badge,
   Stack,
+  Alert,
   // Alert,
 } from "@mui/material";
 import {
@@ -272,7 +273,22 @@ export default function DataSource() {
             label={row.account}
             variant="outlined"
             size="small"
-            sx={{ borderRadius: 1 }}
+            sx={{
+              borderRadius: '8px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              px: 1,
+              height: 28,
+              letterSpacing: 0.5,
+              backgroundColor: 'white',
+              color: '#1a237e',
+              border: '1px solid #c5cae9',
+              textTransform: 'uppercase',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: '#e8eaf6',
+              },
+            }}
           />
         ),
       },
@@ -292,7 +308,7 @@ export default function DataSource() {
             "RESTRICTED" | "MEDIUM" | "LOW" | "CRITICAL" | "NORMAL",
             string
           > = {
-            RESTRICTED: "#d32f2f",
+            RESTRICTED: "#ff3d3d",
             MEDIUM: "#ffa000",
             LOW: "#388e3c",
             CRITICAL: "#c2185b",
@@ -300,7 +316,6 @@ export default function DataSource() {
           };
 
           const backgroundColor = colorMap[sensitivity] || "#9e9e9e";
-          const textColor = "#000";
 
           return (
             <Chip
@@ -309,7 +324,7 @@ export default function DataSource() {
               sx={{
                 letterSpacing: 0.5,
                 borderRadius: "6px",
-                color: textColor,
+                // color: textColor,
                 backgroundColor: `${backgroundColor}30`,
                 border: `1px solid ${backgroundColor}`,
                 height: "24px",
@@ -326,7 +341,7 @@ export default function DataSource() {
         align: "center",
         headerAlign: "center",
         renderCell: ({ row }) => (
-          <Typography variant="body2">{row.sensitive_records}</Typography>
+          <Typography variant="body2" sx={{ paddingTop: 2 }}>{row.sensitive_records}</Typography>
         ),
       },
       {
@@ -393,7 +408,7 @@ export default function DataSource() {
                 py: 0.5,
                 fontWeight: 500,
                 fontSize: "0.75rem",
-                borderRadius: "20px",
+                borderRadius: "5px",
                 textTransform: "capitalize",
                 whiteSpace: "nowrap",
               }}
@@ -463,8 +478,8 @@ export default function DataSource() {
     setTrustLevel("");
   };
 
-  //  if (!selectedCompany)
-  //   return <Alert severity="warning">Please Set Company Context</Alert>;
+   if (!selectedCompany)
+    return <Alert severity="warning">Please Set Company Context</Alert>;
 
   return (
     <Box pt={0} pb={0} px={3}>

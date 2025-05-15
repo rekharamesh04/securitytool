@@ -18,9 +18,14 @@ export interface FormProps extends DialogProps<undefined, string | null> {
 export interface FormModel {
   company: object;
   datastore: string;
-  account: string;
-  // sensitivity: string;
-  // sensitive_records: string;
+  account?: string;
+  subCategory: string;
+  awsAccessKeyId?: string;
+  awsSecretAccessKey?: string;
+  awsRegion?: string;
+  s3BucketName?: string;
+  selectedSubCategory: string;
+  rdsEngine?: string; // ✅ add this
   data: string;
   status: boolean;
 }
