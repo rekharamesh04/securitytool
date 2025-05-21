@@ -66,6 +66,7 @@ export default function DataSource() {
   const [dataClass, setDataClass] = useState<string>("");
   const [identityName, setIdentityName] = useState<string>("");
   const [trustLevel, setTrustLevel] = useState<string>("");
+  const [, setScanningId] = useState<string | null>(null);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentFilter, setCurrentFilter] = useState<string>("");
@@ -245,6 +246,31 @@ export default function DataSource() {
     [dialogs, params]
   );
 
+  const handleScan = async (id: string) => {
+    setScanningId(id);
+    try {
+      const response = await axiosInstance.post(`/admin/company/data-source/${id}/scan`);
+
+      mutate(`${fetchUrl}?${params}`, { revalidate: true });
+
+      const { data } = response;
+      notifications.show(data.message || "Scan completed successfully", {
+        severity: "success",
+      });
+    } catch (error: any) {
+      console.error("Scan error:", error);
+
+      notifications.show(
+        error?.response?.data?.message || "Scan failed",
+        { severity: "error" }
+      );
+    } finally {
+      setScanningId(null);
+    }
+  };
+
+
+
   const columns: GridColDef[] = useMemo(
     () => [
       {
@@ -297,7 +323,7 @@ export default function DataSource() {
         headerName: "SENSITIVITY",
         width: 150,
         renderCell: ({ row }) => {
-          const sensitivity = row.sensitivity.toUpperCase() as
+          const sensitivity = row.sensitivity?.toUpperCase() as
             | "RESTRICTED"
             | "MEDIUM"
             | "LOW"
@@ -403,6 +429,7 @@ export default function DataSource() {
             <Button
               variant="outlined"
               color={isScanned ? "success" : "inherit"}
+              onClick={() => handleScan(row._id)}
               sx={{
                 px: 2,
                 py: 0.5,
@@ -880,7 +907,7 @@ export default function DataSource() {
             onRowSelectionModelChange={(newModel) =>
               setRowSelectionModel(newModel)
             }
-            onRowClick={() => handleViewDetails()}
+            // onRowClick={() => handleViewDetails()}
             paginationMode="server"
             sortingMode="server"
             paginationModel={paginationModel}

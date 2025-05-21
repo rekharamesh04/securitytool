@@ -28,4 +28,6 @@ export interface FormModel {
   rdsEngine?: string; // ✅ add this
   data: string;
   status: boolean;
+  // For MongoDB Atlas
+  connectionString?: string;
 }

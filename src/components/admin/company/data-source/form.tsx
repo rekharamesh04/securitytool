@@ -1,7 +1,6 @@
 "use client";
 
 import axiosInstance from "@/utils/axiosInstance";
-import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Autocomplete,
   Box,
@@ -9,9 +8,11 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Icon,
   IconButton,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -19,7 +20,7 @@ import { useNotifications } from "@toolpad/core";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as yup from "yup";
+// import * as yup from "yup";
 import { defaultValues, fetchUrl, FormModel, FormProps } from "./constant";
 import CompanyAutocomplete from "../../autocomplete/companyAutocomplete";
 import { Theme } from "@mui/material/styles";
@@ -28,41 +29,41 @@ import theme from "@/theme/theme";
 
 
 // Extended validation schema for AWS S3
-const validationSchema = yup.object().shape({
-  company: yup.object().required("Company is required"),
-  datastore: yup.string().required("Datastore is required"),
-  account: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-    return datastore === "AWS" && subCategory === "S3"
-      ? schema.notRequired()
-      : schema.required("Account is required");
-  }),
-  subCategory: yup.string().required("Sub-category is required"),
-  selectedSubCategory: yup.string().required("selectedSubCategory is required"),
+// const validationSchema = yup.object().shape({
+//   company: yup.object().required("Company is required"),
+//   datastore: yup.string().nullable().notRequired(),
+//   account: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//     return datastore === "AWS" && subCategory === "S3"
+//       ? schema.notRequired()
+//       : schema.required("Account is required");
+//   }),
+//   subCategory: yup.string().required("Sub-category is required"),
+//   selectedSubCategory: yup.string().required("selectedSubCategory is required"),
 
-  data: yup.string().required("Data is required"),
-  status: yup.boolean().required(),
+//   data: yup.string().required("Data is required"),
+  // status: yup.boolean().required(),
 
-  awsAccessKeyId: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-    return datastore === "AWS" && subCategory === "S3"
-      ? schema.required("AWS Access Key ID is required")
-      : schema.notRequired();
-  }),
-  awsSecretAccessKey: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-    return datastore === "AWS" && subCategory === "S3"
-      ? schema.required("AWS Secret Access Key is required")
-      : schema.notRequired();
-  }),
-  awsRegion: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-    return datastore === "AWS" && subCategory === "S3"
-      ? schema.required("AWS Region is required")
-      : schema.notRequired();
-  }),
-  s3BucketName: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-    return datastore === "AWS" && subCategory === "S3"
-      ? schema.required("S3 Bucket Name is required")
-      : schema.notRequired();
-  }),
-});
+//   awsAccessKeyId: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//     return datastore === "AWS" && subCategory === "S3"
+//       ? schema.required("AWS Access Key ID is required")
+//       : schema.notRequired();
+//   }),
+//   awsSecretAccessKey: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//     return datastore === "AWS" && subCategory === "S3"
+//       ? schema.required("AWS Secret Access Key is required")
+//       : schema.notRequired();
+//   }),
+//   awsRegion: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//     return datastore === "AWS" && subCategory === "S3"
+//       ? schema.required("AWS Region is required")
+//       : schema.notRequired();
+//   }),
+//   s3BucketName: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//     return datastore === "AWS" && subCategory === "S3"
+//       ? schema.required("S3 Bucket Name is required")
+//       : schema.notRequired();
+//   }),
+// });
 
 // Define database types
 const DATABASE_TYPES = [
@@ -205,7 +206,7 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
     watch,
     formState: { errors },
   } = useForm<FormModel>({
-    resolver: yupResolver(validationSchema),
+    // resolver: yupResolver(validationSchema),
     defaultValues: defaultValues,
   });
 
@@ -344,7 +345,29 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
       const url = id !== "new" ? `${fetchUrl}/${id}` : `${fetchUrl}/`;
       const method = id !== "new" ? "put" : "post";
 
-      const response = await axiosInstance.request({ url, method, data });
+      const payload: any = {
+        company: data.company,
+        datastore: data.datastore,
+        subCategory: data.subCategory || null,
+      };
+
+      // If it's a database, include the connection string from 'account'
+      if (isDatabase && data.account) {
+        payload.account = data.account;
+      }
+
+      // Clean out null/undefined/empty string fields
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const cleanPayload = Object.fromEntries(
+        Object.entries(payload).filter(([, v]) => v !== null && v !== "")
+      );
+
+      const response = await axiosInstance.request({
+        url,
+        method,
+        data: cleanPayload,
+      });
+
       if (response.status === 200 || response.status === 201) {
         const { data } = response;
         notifications.show(data.message, { severity: "success" });
@@ -403,7 +426,7 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
           </IconButton>
         </Stack>
       </DialogTitle>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, (errors) => console.error("Form Errors:", errors))}>
         <DialogContent sx={{ p: 4 }}>
           <Box
             sx={{
@@ -1628,12 +1651,15 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
                 InputLabelProps={{ shrink: true }}
               />
             </>
-          ) : isDatabase ? (
+          ) :
+          isDatabase ? (
             <TextField
               label="Connection String"
               fullWidth
               margin="normal"
-              {...register("account")}
+              {...register("account", {
+                required: "Connection string is required",
+              })}
               error={!!errors.account}
               helperText={
                 errors.account?.message ||
@@ -1689,7 +1715,7 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
             )}
           /> */}
 
-          {/* <FormControlLabel
+          <FormControlLabel
             control={
               <Switch
                 {...register('status')}
@@ -1699,7 +1725,7 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
               />
             }
             label={watch('status') ? 'Active' : 'Inactive'}
-          /> */}
+          />
         </DialogContent>
         <Box
           sx={{
