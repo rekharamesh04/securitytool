@@ -2,7 +2,7 @@
 
 import axiosInstance from '@/utils/axiosInstance';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControlLabel, Icon, IconButton, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControlLabel, Icon, IconButton, Stack, Switch, TextField, Typography, useTheme } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -10,14 +10,26 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { defaultValues, fetchUrl, FormModel, FormProps } from '@/components/company/data-source/constant';
 import CompanyAutocomplete from '@/components/admin/autocomplete/companyAutocomplete';
+import { keyframes } from '@emotion/react';
+
+// Animation for button hover
+const pulseAnimation = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+`;
 
 // Validation schema
 const validationSchema = yup.object().shape({
   company: yup.object().required('Company is required'),
   datastore: yup.string().required('Datastore is required'),
   account: yup.string().required('Account is required'),
-  // sensitivity: yup.string().required('Sensitivity is required'),
-  // sensitive_records: yup.string().required('Sensitive Records is required'),
   data: yup.string().required('Data is required'),
   status: yup.boolean().required(),
 });
@@ -30,6 +42,7 @@ export default function DataSourceForm({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const notifications = useNotifications();
+  const theme = useTheme();
 
   // Datastore options
   const DATASTORE_OPTIONS = [
@@ -51,7 +64,6 @@ export default function DataSourceForm({
       group: 'Email Services',
       items: ['Gmail', 'Outlook', 'Yahoo Mail', 'ProtonMail', 'Zoho Mail']
     },
-
   ];
 
   // Flatten for the actual options
@@ -83,7 +95,7 @@ export default function DataSourceForm({
 
         reset({
           ...data,
-          company: data.company, // full company object with _id and name
+          company: data.company,
         });
 
         setLoading(false);
@@ -94,8 +106,7 @@ export default function DataSourceForm({
             router.push("/forbidden")
         }
     }
-}
-,[router,reset])
+  },[router,reset])
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -128,36 +139,50 @@ export default function DataSourceForm({
   if (loading) return <p>Loading...</p>;
 
   return (
-    <Dialog fullWidth open={open} onClose={() => onClose(null)}>
-      <DialogTitle>
+    <Dialog 
+      fullWidth 
+      open={open} 
+      onClose={() => onClose(null)}
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          background: theme.palette.background.paper,
+          boxShadow: theme.shadows[10],
+        }
+      }}
+    >
+      <DialogTitle sx={{ 
+        background: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.primary.main,
+        color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.white,
+        borderTopLeftRadius: '16px',
+        borderTopRightRadius: '16px',
+        padding: '16px 24px',
+      }}>
         <Stack
           direction="row"
           spacing={2}
           alignItems="center"
           justifyContent="space-between"
         >
-          <Typography variant="h5">
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
             {id !== "new" ? 'Update Data Source' : 'Create Data Source'}
           </Typography>
-          <IconButton onClick={() => onClose(null)}>
+          <IconButton 
+            onClick={() => onClose(null)}
+            sx={{
+              color: theme.palette.common.white,
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.primary.dark,
+              }
+            }}
+          >
             <Icon>close</Icon>
           </IconButton>
         </Stack>
       </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogContent>
-
+        <DialogContent sx={{ padding: '24px' }}>
           <CompanyAutocomplete setValue={setValue} value={company} />
-
-          {/* <TextField
-            label="Datastore"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.datastore}
-            helperText={errors.datastore?.message}
-            {...register('datastore')}
-          /> */}
 
           <Autocomplete
             options={flattenedOptions}
@@ -176,8 +201,31 @@ export default function DataSourceForm({
                 error={!!errors.datastore}
                 helperText={errors.datastore?.message}
                 InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    '& fieldset': {
+                      borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.primary.main,
+                      boxShadow: `0 0 0 2px ${theme.palette.primary.light}`,
+                    },
+                  },
+                }}
               />
             )}
+            sx={{
+              marginTop: '16px',
+              '& .MuiAutocomplete-groupLabel': {
+                backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100],
+                color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
+                fontWeight: 600,
+              },
+            }}
           />
 
           <TextField
@@ -188,104 +236,170 @@ export default function DataSourceForm({
             error={!!errors.account}
             helperText={errors.account?.message}
             {...register('account')}
-          />
-
-          {/* <TextField
-            label="Sensitivity"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.sensitivity}
-            helperText={errors.sensitivity?.message}
-            {...register('sensitivity')}
-          />
-
-          <TextField
-            label="Sensitive Records"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.sensitive_records}
-            helperText={errors.sensitive_records?.message}
-            {...register('sensitive_records')}
-          /> */}
-
-          {/* <TextField
-            label="Data"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.data}
-            helperText={errors.data?.message}
-            {...register('data')}
-          /> */}
-
-<Autocomplete
-  multiple
-  freeSolo
-  options={[]} // No predefined options
-  value={(watch("data") || "").split(",").filter(Boolean)}
-  onChange={(_, newValue) => {
-    // Join values back to string for form state
-    setValue("data", newValue.join(","));
-  }}
-  renderTags={(value: readonly string[], getTagProps) =>
-    value.map((option: string, index: number) => {
-      const { key, ...tagProps } = getTagProps({ index });
-      return (
-        <Chip
-          key={key}
-          label={option}
-          {...tagProps}
-          sx={{
-            backgroundColor: "#e3f2fd",
-            color: "#0d47a1",
-            fontWeight: 500,
-            borderRadius: "8px",
-            paddingX: "4px",
-            margin: "2px",
-            boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
-            "& .MuiChip-deleteIcon": {
-              color: "#0d47a1",
-              ":hover": {
-                color: "#1565c0",
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.palette.primary.main,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.primary.main,
+                  boxShadow: `0 0 0 2px ${theme.palette.primary.light}`,
+                },
               },
-            },
-          }}
-        />
-      );
-    })
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Data"
-      margin="normal"
-      error={!!errors.data}
-      helperText={errors.data?.message}
-    />
-  )}
-/>
+            }}
+          />
 
-
+          <Autocomplete
+            multiple
+            freeSolo
+            options={[]}
+            value={(watch("data") || "").split(",").filter(Boolean)}
+            onChange={(_, newValue) => {
+              setValue("data", newValue.join(","));
+            }}
+            renderTags={(value: readonly string[], getTagProps) =>
+              value.map((option: string, index: number) => {
+                const { key, ...tagProps } = getTagProps({ index });
+                return (
+                  <Chip
+                    key={key}
+                    label={option}
+                    {...tagProps}
+                    sx={{
+                      backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light,
+                      color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.contrastText,
+                      fontWeight: 500,
+                      borderRadius: '8px',
+                      paddingX: '4px',
+                      margin: '2px',
+                      boxShadow: theme.shadows[1],
+                      '& .MuiChip-deleteIcon': {
+                        color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.contrastText,
+                        ':hover': {
+                          color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : theme.palette.primary.dark,
+                        },
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: theme.shadows[2],
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                    }}
+                  />
+                );
+              })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Data"
+                margin="normal"
+                error={!!errors.data}
+                helperText={errors.data?.message}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    '& fieldset': {
+                      borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.primary.main,
+                      boxShadow: `0 0 0 2px ${theme.palette.primary.light}`,
+                    },
+                  },
+                }}
+              />
+            )}
+          />
 
           <FormControlLabel
             control={
               <Switch
                 {...register('status')}
-                checked={watch('status')} // Use `watch` to track the current value of `status`
-                onChange={(e) => setValue('status', e.target.checked)} // Update `status` when the Switch is toggled
+                checked={watch('status')}
+                onChange={(e) => setValue('status', e.target.checked)}
                 color="primary"
+                sx={{
+                  '& .MuiSwitch-switchBase': {
+                    '&.Mui-checked': {
+                      color: theme.palette.primary.main,
+                      '& + .MuiSwitch-track': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                    },
+                  },
+                }}
               />
             }
-            label={watch('status') ? 'Active' : 'Inactive'} // Dynamic label based on the value
+            label={watch('status') ? 'Active' : 'Inactive'}
+            sx={{
+              marginTop: '16px',
+              '& .MuiFormControlLabel-label': {
+                color: theme.palette.text.primary,
+                fontWeight: 500,
+              },
+            }}
           />
 
-          <Box marginTop={2} display="flex" justifyContent="space-between">
-            <Button type="submit" variant="contained" color="primary">
+          <Box 
+            marginTop={4} 
+            display="flex" 
+            justifyContent="space-between"
+            gap={2}
+          >
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary"
+              sx={{
+                borderRadius: '12px',
+                padding: '10px 24px',
+                fontWeight: 600,
+                fontSize: '16px',
+                textTransform: 'none',
+                boxShadow: theme.shadows[2],
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.dark,
+                  boxShadow: theme.shadows[4],
+                  animation: `${pulseAnimation} 0.5s ease`,
+                },
+                transition: 'all 0.3s ease',
+                minWidth: '120px',
+              }}
+            >
               {id !== 'new' ? 'Update' : 'Create'}
             </Button>
-            <Button type="button" variant="outlined" color="secondary" onClick={() => reset()}>
+            <Button 
+              type="button" 
+              variant="outlined" 
+              color="secondary" 
+              onClick={() => reset()}
+              sx={{
+                borderRadius: '12px',
+                padding: '10px 24px',
+                fontWeight: 600,
+                fontSize: '16px',
+                textTransform: 'none',
+                boxShadow: theme.shadows[1],
+                borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[400],
+                color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100],
+                  borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[600],
+                  boxShadow: theme.shadows[2],
+                  animation: `${pulseAnimation} 0.5s ease`,
+                },
+                transition: 'all 0.3s ease',
+                minWidth: '120px',
+              }}
+            >
               Reset
             </Button>
           </Box>

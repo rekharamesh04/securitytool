@@ -9,8 +9,8 @@ import {
   Box,
   Typography,
   ListItemIcon,
+  Badge,
 } from "@mui/material";
-// import { AccountCircle, Settings } from "@mui/icons-material";
 import { Logout, Email } from "@mui/icons-material";
 import { Theme } from "@mui/material/styles";
 
@@ -32,54 +32,102 @@ export const UserMenu = ({
   logout: () => void;
 }) => (
   <>
-    <Button
-      onClick={handleMenuOpen}
+    <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 1,
-        color: "inherit",
-        textTransform: "none",
-        minWidth: "auto",
-        padding: "4px 8px",
-        "&:hover": {
-          backgroundColor: "rgba(255, 255, 255, 0.08)",
-        },
       }}
     >
-      <Avatar
+      <Button
+        onClick={handleMenuOpen}
         sx={{
-          width: 42,
-          height: 42,
-          backgroundColor: (theme: Theme) =>
-                      theme.palette.mode === "light" ? "#375199" : "#4a6ccc",
-          color: (theme: Theme) =>
-                          theme.palette.mode === "light" ? "white" : "white",
-          fontSize: "1.25rem",
-          fontWeight: 500,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          color: "inherit",
+          textTransform: "none",
+          minWidth: "auto",
+          padding: "4px 8px",
+          boxSizing: "border-box",
+          "&:hover": {
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+          },
         }}
       >
-        {user?.name?.charAt(0)}
-      </Avatar>
-    </Button>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          variant="dot"
+          sx={{
+            "& .MuiBadge-badge": {
+              backgroundColor: "#44b700",
+              color: "#44b700",
+              boxShadow: (theme) => `0 0 0 2px ${theme.palette.background.paper}`,
+              "&::after": {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                animation: "ripple 1.2s infinite ease-in-out",
+                border: "1px solid currentColor",
+                content: '""',
+              },
+            },
+            "@keyframes ripple": {
+              "0%": {
+                transform: "scale(.8)",
+                opacity: 1,
+              },
+              "100%": {
+                transform: "scale(2.4)",
+                opacity: 0,
+              },
+            },
+          }}
+        >
+          <Avatar
+            sx={{
+              width: 42,
+              height: 42,
+              backgroundColor: (theme: Theme) =>
+                theme.palette.mode === "light" ? "#375199" : "#4a6ccc",
+              color: "white",
+              fontSize: "1.25rem",
+              fontWeight: 500,
+              boxSizing: "border-box",
+              border: "2px solid",
+              borderColor: (theme) => theme.palette.primary.main,
+            }}
+          >
+            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+          </Avatar>
+        </Badge>
+      </Button>
+    </Box>
+
     <Menu
       anchorEl={anchorEl}
       open={open}
       onClose={handleMenuClose}
       onClick={handleMenuClose}
       PaperProps={{
-        elevation: 0,
+        elevation: 4,
         sx: {
           overflow: "visible",
-          filter: "drop-shadow(0px 2px 8px rgba(41, 107, 189, 0.32))",
+          filter: "drop-shadow(0px 4px 16px rgba(0, 0, 0, 0.2))",
           mt: 1.5,
-          minWidth: 200,
-          "& .MuiAvatar-root": {
-            width: 32,
-            height: 32,
-            ml: -0.5,
-            mr: 1,
-          },
+          minWidth: 280,
+          borderRadius: "12px",
+          background: (theme) =>
+            theme.palette.mode === "light" ? "#ffffff" : "#1A1A1A",
+          border: (theme) =>
+            `1px solid ${
+              theme.palette.mode === "light"
+                ? "rgba(93, 135, 255, 0.3)"
+                : "rgba(255, 255, 255, 0.1)"
+            }`,
           "&:before": {
             content: '""',
             display: "block",
@@ -88,9 +136,22 @@ export const UserMenu = ({
             right: 14,
             width: 10,
             height: 10,
-            bgcolor: "background.paper",
-            transform: "translateY(-70%) rotate(45deg)",
+            bgcolor: (theme) =>
+              theme.palette.mode === "light" ? "#ffffff" : "#1A1A1A",
+            transform: "translateY(-50%) rotate(45deg)",
             zIndex: 0,
+            borderTop: (theme) =>
+              `1px solid ${
+                theme.palette.mode === "light"
+                  ? "rgba(93, 135, 255, 0.3)"
+                  : "rgba(255, 255, 255, 0.1)"
+              }`,
+            borderLeft: (theme) =>
+              `1px solid ${
+                theme.palette.mode === "light"
+                  ? "rgba(93, 135, 255, 0.3)"
+                  : "rgba(255, 255, 255, 0.1)"
+              }`,
           },
         },
       }}
@@ -111,62 +172,68 @@ export const UserMenu = ({
         <Box
           sx={{
             display: "flex",
-            flexDirection: "column",
+            alignItems: "center",
+            mb: 1,
             width: "100%",
-            padding: "0 8px",
           }}
         >
-          <Typography
-            variant="subtitle2"
+          <Avatar
             sx={{
-              color: (theme) => theme.palette.text.primary,
-              fontSize: "1.25rem",
-              fontWeight: "bold",
-              lineHeight: 1.3,
-              mb: 0.5,
+              width: 48,
+              height: 48,
+              mr: 2,
+              backgroundColor: (theme: Theme) =>
+                theme.palette.mode === "light" ? "#375199" : "#4a6ccc",
+              color: "white",
+              fontSize: "1.5rem",
+              fontWeight: 600,
+              boxSizing: "border-box",
+              border: "2px solid",
+              borderColor: (theme) => theme.palette.primary.main,
             }}
           >
-            {user?.name}
-          </Typography>
-
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <ListItemIcon
-              sx={{
-                color: "(theme) => theme.palette.text.secondary",
-                fontSize: "2rem",
-                ml: 1
-              }}
-            >
-              <Email fontSize="small" />
-            </ListItemIcon>
+            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+          </Avatar>
+          <Box>
             <Typography
-              variant="caption"
+              variant="subtitle2"
               sx={{
-                color: (theme) => theme.palette.text.secondary,
-                fontSize: "1rem",
+                color: (theme) => theme.palette.text.primary,
+                fontSize: "1.25rem",
+                fontWeight: "bold",
                 lineHeight: 1.3,
-                mr: 1
+                mb: 0.5,
               }}
             >
-              {user?.email}
+              {user?.name}
             </Typography>
+
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <ListItemIcon
+                sx={{
+                  color: (theme) => theme.palette.text.secondary,
+                  fontSize: "2rem",
+                  ml: 1,
+                }}
+              >
+                <Email fontSize="small" />
+              </ListItemIcon>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: (theme) => theme.palette.text.secondary,
+                  fontSize: "1rem",
+                  lineHeight: 1.3,
+                  mr: 1,
+                }}
+              >
+                {user?.email}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </MenuItem>
       <Divider />
-      {/* <MenuItem onClick={() => handleNavigation("/profile")} sx={{ py: 1.5 }}>
-          <ListItemIcon>
-            <AccountCircle fontSize="small" />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
-        <MenuItem onClick={() => handleNavigation("/settings")} sx={{ py: 1.5 }}>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <Divider /> */}
       <MenuItem
         onClick={() => {
           handleMenuClose();
@@ -175,11 +242,10 @@ export const UserMenu = ({
         sx={{
           py: 1.5,
           mt: 0.5,
-          transition: "all 0.2s ease",
+          transition: "background-color 0.2s ease",
           "&:hover": {
             backgroundColor: (theme) => theme.palette.error.light,
             color: "#fff",
-            transform: "scale(1.02)",
             "& .MuiListItemIcon-root": {
               color: "#fff",
             },
@@ -187,7 +253,7 @@ export const UserMenu = ({
         }}
       >
         <ListItemIcon sx={{ minWidth: 36, ml: "20px" }}>
-          <Logout fontSize="small" sx={{ transition: "all 0.2s ease" }} />
+          <Logout fontSize="small" />
         </ListItemIcon>
         <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "1rem" }}>
           Sign Out

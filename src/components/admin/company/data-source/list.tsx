@@ -16,7 +16,6 @@ import {
   Badge,
   Stack,
   Alert,
-  // Alert,
 } from "@mui/material";
 import {
   DataGrid,
@@ -688,14 +687,7 @@ export default function DataSource() {
             onClick={handleAdd}
             sx={{
               textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              boxShadow: "none",
-              "&:hover": {
-                boxShadow: (theme) =>
-                  `0 2px 4px ${alpha(theme.palette.primary.main, 0.2)}`,
-              },
+              
             }}
           >
             Add
@@ -744,18 +736,7 @@ export default function DataSource() {
           <Button
             variant="outlined"
             onClick={handleViewDetails}
-            sx={{
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              borderColor: (theme) => theme.palette.divider,
-              "&:hover": {
-                borderColor: (theme) => theme.palette.primary.main,
-                backgroundColor: (theme) =>
-                  alpha(theme.palette.primary.main, 0.04),
-              },
-            }}
+
           >
             Columns
           </Button>
@@ -764,18 +745,7 @@ export default function DataSource() {
             variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={() => console.log("Downloading...")}
-            sx={{
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2,
-              py: 1,
-              borderColor: (theme) => theme.palette.divider,
-              "&:hover": {
-                borderColor: (theme) => theme.palette.primary.main,
-                backgroundColor: (theme) =>
-                  alpha(theme.palette.primary.main, 0.04),
-              },
-            }}
+
           >
             Export CSV
           </Button>
@@ -844,12 +814,8 @@ export default function DataSource() {
                 textTransform: "none",
                 color: theme.palette.text.secondary,
                 ml: 1,
-                borderRadius: "6px",
-                px: 1.5,
-                py: 0.5,
                 "&:hover": {
                   color: theme.palette.error.main,
-                  backgroundColor: alpha(theme.palette.error.main, 0.08),
                 },
               })}
             >

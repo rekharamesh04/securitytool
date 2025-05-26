@@ -1,6 +1,6 @@
 "use client";
 
-import { CompanyAuthContext } from '@/contexts/CompanyAuthContext';
+import { CompanyAuthContext } from "@/contexts/CompanyAuthContext";
 import { useContext } from 'react';
 
 const useCompanyAuth = () => {

@@ -1,50 +1,77 @@
 "use client";
 
-import axiosInstance from "@/utils/axiosInstance";
-import { getFetcher } from "@/utils/fetcher";
 import {
   Box,
   Chip,
   CircularProgress,
-  InputAdornment,
-  TextField,
   Typography,
   Paper,
-  // Alert,
   Button,
   Menu,
   MenuItem,
   Badge,
   Stack,
+  InputAdornment,
+  TextField,
+  keyframes,
 } from "@mui/material";
-import {
-  DataGrid,
-  GridCloseIcon,
-  GridColDef,
-  GridRowSelectionModel,
-  GridSearchIcon,
-  GridSortModel,
-} from "@mui/x-data-grid";
-import { useDialogs, useNotifications } from "@toolpad/core";
-// import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import useSWR, { mutate } from "swr";
-import { fetchUrl } from '@/components/company/data-source/constant';
-import theme from "@/theme/theme";
-import DataSourceForm from "@/components/company/data-source/form";
-import { useCompanyContext } from "@/contexts/CompanyContext";
+import { DataGrid, GridColDef, GridSortModel, GridSearchIcon, GridRowSelectionModel } from "@mui/x-data-grid";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import useSWR from "swr";
+import axiosInstance from '@/utils/axiosInstance';
+import { useCompanyAuth } from "@/contexts/CompanyAuthContext";
 import { useRouter } from "next/navigation";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { alpha } from "@mui/system";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import DownloadIcon from "@mui/icons-material/Download";
-import AddIcon from "@mui/icons-material/Add";
+import {
+  FilterAlt as FilterAltIcon,
+  FilterAltOff as FilterAltOffIcon,
+  ArrowDropDown as ArrowDropDownIcon,
+  Download as DownloadIcon,
+} from "@mui/icons-material";
+import { useTheme, alpha } from "@mui/material/styles";
 
-export default function DataSource() {
-  const dialogs = useDialogs();
-  const notifications = useNotifications();
+// Animation keyframes (removed unused pulse as per request)
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+interface DataSource {
+  _id: string;
+  company: {
+    _id: string;
+    name: string;
+  };
+  datastore: string;
+  account: string;
+  sensitivity: string;
+  sensitive_records: string;
+  data: string;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
+  __v: number;
+  engine?: string;
+  scanStatus?: string;
+}
+
+const fetcher = async (url: string) => {
+  try {
+    const response = await axiosInstance.get(url);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dataSourceData', JSON.stringify(response.data.data));
+    }
+    return response.data;
+  } catch (error: any) {
+    console.error("Fetcher error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+const CompanyDataSource = () => {
+  const { user } = useCompanyAuth();
+  const companyId = user?.company?._id;
+  const router = useRouter();
+  const theme = useTheme();
 
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
@@ -53,12 +80,7 @@ export default function DataSource() {
     pageSize: 10,
   });
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
-  const { selectedCompany } = useCompanyContext();
-  const [rowSelectionModel, setRowSelectionModel] =
-    useState<GridRowSelectionModel>([]);
-
-  const router = useRouter();
-
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [cloudProvider, setCloudProvider] = useState<string>("");
   const [infrastructure, setInfrastructure] = useState<string>("");
   const [account, setAccount] = useState<string>("");
@@ -66,108 +88,305 @@ export default function DataSource() {
   const [dataClass, setDataClass] = useState<string>("");
   const [identityName, setIdentityName] = useState<string>("");
   const [trustLevel, setTrustLevel] = useState<string>("");
-
-  // Menu anchor states
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentFilter, setCurrentFilter] = useState<string>("");
+  const [isMounted, setIsMounted] = useState(false);
 
-  const handleFilterClick = (
-    event: React.MouseEvent<HTMLElement>,
-    filterName: string
-  ) => {
-    setAnchorEl(event.currentTarget);
-    setCurrentFilter(filterName);
-  };
-
-  const handleFilterClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleFilterSelect = (value: string) => {
-    switch (currentFilter) {
-      case "Cloud Provider":
-        setCloudProvider(value);
-        break;
-      case "Infrastructure":
-        setInfrastructure(value);
-        break;
-      case "Account":
-        setAccount(value);
-        break;
-      case "Scan Status":
-        setScanStatus(value);
-        break;
-      case "Data Class":
-        setDataClass(value);
-        break;
-      case "Identity Name":
-        setIdentityName(value);
-        break;
-      case "Trust Level":
-        setTrustLevel(value);
-        break;
-    }
-    handleFilterClose();
-  };
-
-  const handleClearFilter = (filterName: string) => {
-    switch (filterName) {
-      case "Cloud Provider":
-        setCloudProvider("");
-        break;
-      case "Infrastructure":
-        setInfrastructure("");
-        break;
-      case "Account":
-        setAccount("");
-        break;
-      case "Scan Status":
-        setScanStatus("");
-        break;
-      case "Data Class":
-        setDataClass("");
-        break;
-      case "Identity Name":
-        setIdentityName("");
-        break;
-      case "Trust Level":
-        setTrustLevel("");
-        break;
-    }
-  };
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   // Debounce search text
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchText(searchText);
-    }, 500); // 500ms delay
-
-    return () => {
-      clearTimeout(handler);
-    };
+    }, 500);
+    return () => clearTimeout(handler);
   }, [searchText]);
+
+  const handleFilterClick = useCallback((
+    event: React.MouseEvent<HTMLElement>,
+    filterName: string
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentFilter(filterName);
+  }, []);
+
+  const handleFilterClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  const handleFilterSelect = useCallback((value: string) => {
+    switch (currentFilter) {
+      case "Cloud Provider": setCloudProvider(value); break;
+      case "Infrastructure": setInfrastructure(value); break;
+      case "Account": setAccount(value); break;
+      case "Scan Status": setScanStatus(value); break;
+      case "Data Class": setDataClass(value); break;
+      case "Identity Name": setIdentityName(value); break;
+      case "Trust Level": setTrustLevel(value); break;
+    }
+    handleFilterClose();
+  }, [currentFilter, handleFilterClose]);
+
+  const handleClearFilter = useCallback((filterName: string) => {
+    switch (filterName) {
+      case "Cloud Provider": setCloudProvider(""); break;
+      case "Infrastructure": setInfrastructure(""); break;
+      case "Account": setAccount(""); break;
+      case "Scan Status": setScanStatus(""); break;
+      case "Data Class": setDataClass(""); break;
+      case "Identity Name": setIdentityName(""); break;
+      case "Trust Level": setTrustLevel(""); break;
+    }
+  }, []);
+
+  const handleClearAllFilters = useCallback(() => {
+    setCloudProvider("");
+    setInfrastructure("");
+    setAccount("");
+    setScanStatus("");
+    setDataClass("");
+    setIdentityName("");
+    setTrustLevel("");
+  }, []);
+
+  const handleScanButtonClick = useCallback((id: string) => {
+    router.push(`/company/data-source/dataDetails/${id}`);
+  }, [router]);
+
+  const columns: GridColDef<DataSource>[] = useMemo(
+    () => [
+      {
+        field: "datastore",
+        headerName: "DATASTORE",
+        flex: 1.2,
+        minWidth: 200,
+        align: "center",
+        headerAlign: "center",
+        renderCell: ({ row }) => (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            padding: '8px 0'
+          }}>
+            <Typography fontWeight={600} variant="body2" textAlign="center">
+              {row.datastore}
+            </Typography>
+            {row.engine && (
+              <Typography variant="caption" color="text.secondary" textAlign="center">
+                {row.engine}
+              </Typography>
+            )}
+          </Box>
+        ),
+      },
+      {
+        field: "account",
+        headerName: "ACCOUNT",
+        flex: 1,
+        minWidth: 200,
+        align: "center",
+        headerAlign: "center",
+        renderCell: ({ row }) => (
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%'
+          }}>
+            <Chip
+              label={row.account}
+              variant="outlined"
+              size="small"
+              sx={{ borderRadius: 1 }}
+            />
+          </Box>
+        ),
+      },
+      {
+        field: "sensitivity",
+        headerName: "SENSITIVITY",
+        width: 150,
+        align: "center",
+        headerAlign: "center",
+        renderCell: ({ row }) => {
+          const sensitivity = row.sensitivity.toUpperCase() as
+            | "RESTRICTED"
+            | "MEDIUM"
+            | "LOW"
+            | "CRITICAL"
+            | "NORMAL";
+          const colorMap: Record<
+            "RESTRICTED" | "MEDIUM" | "LOW" | "CRITICAL" | "NORMAL",
+            string
+          > = {
+            RESTRICTED: "#d32f2f",
+            MEDIUM: "#ffa000",
+            LOW: "#388e3c",
+            CRITICAL: "#c2185b",
+            NORMAL: "#1976d2",
+          };
+          const backgroundColor = colorMap[sensitivity] || "#9e9e9e";
+          const textColor = theme.palette.mode === 'light' ? '#000' : '#fff';
+          return (
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              height: '100%'
+            }}>
+              <Chip
+                label={sensitivity}
+                size="small"
+                sx={{
+                  letterSpacing: 0.5,
+                  borderRadius: "6px",
+                  color: textColor,
+                  backgroundColor: `${backgroundColor}30`,
+                  border: `1px solid ${backgroundColor}`,
+                  height: "24px",
+                  padding: "0 10px",
+                }}
+              />
+            </Box>
+          );
+        },
+      },
+      {
+        field: "sensitive_records",
+        headerName: "SENSITIVE RECORDS",
+        width: 170,
+        align: "center",
+        headerAlign: "center",
+        renderCell: ({ row }) => (
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%'
+          }}>
+            <Typography variant="body2">{row.sensitive_records}</Typography>
+          </Box>
+        ),
+      },
+      {
+        field: "data",
+        headerName: "DATA",
+        flex: 1,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => {
+          const items = params.row.data?.split(",") || [];
+          const colorMap: Record<string, string> = {
+            PERSONAL: "#3f51b5",
+            FINANCIAL: "#009688",
+            HEALTH: "#e91e63",
+            LEGAL: "#ff9800",
+            INTERNAL: "#607d8b",
+          };
+          return (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                gap: 1,
+                flexWrap: 'wrap',
+                padding: '8px 0'
+              }}
+            >
+              {items.map((item: string, index: number) => {
+                const label = item.trim().toUpperCase();
+                const baseColor = colorMap[label] || "#616161";
+                return (
+                  <Chip
+                    key={index}
+                    label={label}
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
+                      letterSpacing: 0.5,
+                      borderRadius: "6px",
+                      color: baseColor,
+                      backgroundColor: `${baseColor}20`,
+                      border: `1px solid ${baseColor}`,
+                      height: "24px",
+                      padding: "0 10px",
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          );
+        },
+      },
+      {
+        field: "scanStatus",
+        headerName: "SCAN STATUS",
+        width: 160,
+        align: "center",
+        headerAlign: "center",
+        renderCell: ({ row }) => {
+          const status = row.scanStatus;
+          const isScanned = status === "Scanned";
+          return (
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              height: '100%'
+            }}>
+              <Button
+                variant="outlined"
+                color={isScanned ? "success" : "inherit"}
+                onClick={() => handleScanButtonClick(row._id)}
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  fontWeight: 500,
+                  fontSize: "0.75rem",
+                  borderRadius: "20px",
+                  textTransform: "capitalize",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isScanned ? "Rescan" : "Scan"}
+              </Button>
+            </Box>
+          );
+        },
+      },
+    ],
+    [theme, handleScanButtonClick]
+  );
+
+  const backendFetchUrl = '/company/data-sources';
 
   const params = useMemo(() => {
     const searchParams = new URLSearchParams();
     searchParams.append("page", (paginationModel.page + 1).toString());
     searchParams.append("limit", paginationModel.pageSize.toString());
 
-    if (debouncedSearchText) {
-      searchParams.append("search", debouncedSearchText);
-    }
-
+    if (debouncedSearchText) searchParams.append("search", debouncedSearchText);
     if (sortModel?.[0]) {
       searchParams.append("sort", sortModel[0].field);
       searchParams.append("order", sortModel[0].sort ?? "");
     }
+    if (companyId) searchParams.append("company", companyId);
+    else return null;
 
-    // Add company filter if company is selected
-    if (selectedCompany?._id) {
-      // Convert _id to string explicitly
-      searchParams.append("company", selectedCompany._id.toString());
-    }
-
-    // Add filter parameters
     if (cloudProvider) searchParams.append("cloudProvider", cloudProvider);
     if (infrastructure) searchParams.append("infrastructure", infrastructure);
     if (account) searchParams.append("account", account);
@@ -179,9 +398,7 @@ export default function DataSource() {
     return searchParams.toString();
   }, [
     paginationModel,
-    searchText,
-    sortModel,
-    selectedCompany?._id,
+    companyId,
     cloudProvider,
     infrastructure,
     account,
@@ -190,268 +407,40 @@ export default function DataSource() {
     identityName,
     trustLevel,
     debouncedSearchText,
+    sortModel,
   ]);
 
-  const { data, isLoading } = useSWR(`${fetchUrl}?${params}`, getFetcher);
-  const handleAdd = async () => {
-    const result = await dialogs.open((props) => (
-      <DataSourceForm {...props} id="new" />
-    ));
-    if (result) {
-      mutate(`${fetchUrl}?${params}`, { revalidate: true });
-    }
-  };
+  const { data, isLoading, error } = useSWR<{
+    data: DataSource[];
+    total: number;
+  }>(params ? `${backendFetchUrl}?${params}` : null, fetcher);
 
-  const filteredData = useMemo(() => {
-    if (!data?.data || !selectedCompany?._id) return data;
+  const [localDataSources, setLocalDataSources] = useState<DataSource[]>([]);
 
-    return {
-      ...data,
-      data: data.data.filter(
-        (item: any) => item.company._id === selectedCompany._id.toString() // Compare nested _id
-      ),
-      total: data.data.filter(
-        (item: any) => item.company._id === selectedCompany._id.toString()
-      ).length,
-    };
-  }, [data, selectedCompany?._id]);
-
-  const handleDelete = useCallback(
-    async (id: string) => {
-      const confirmed = await dialogs.confirm("Are you sure to delete this ?", {
-        okText: "Yes",
-        cancelText: "No",
-      });
-
-      if (confirmed) {
+  useEffect(() => {
+    if (!isLoading && !error && (!data?.data || data.data.length === 0) && typeof window !== 'undefined') {
+      const storedData = localStorage.getItem('dataSourceData');
+      if (storedData) {
         try {
-          const response = await axiosInstance.delete(`${fetchUrl}/${id}`);
-          // Revalidate the data after deleting the category
-          mutate(`${fetchUrl}?${params}`, { revalidate: true }); //use stable key
-
-          const { data } = response;
-          notifications.show(data.message, { severity: "success" });
-        } catch (err) {
-          console.error("Failed to delete the data:", err);
+          setLocalDataSources(JSON.parse(storedData));
+        } catch (e) {
+          console.error("Failed to parse data from local storage:", e);
+          localStorage.removeItem('dataSourceData');
         }
       }
-    },
-    [dialogs, notifications, params]
-  );
-
-  // Handle editing of a row
-  const handleEdit = useCallback(
-    async (id: string) => {
-      const result = await dialogs.open((props) => (
-        <DataSourceForm {...props} id={id} />
-      ));
-      if (result) {
-        mutate(`${fetchUrl}?${params}`, { revalidate: true });
-      }
-    },
-    [dialogs, params]
-  );
-
-  const columns: GridColDef[] = useMemo(
-    () => [
-      {
-        field: "name",
-        headerName: "DATASTORE",
-        flex: 1.2,
-        minWidth: 200,
-        renderCell: ({ row }) => (
-          <Box sx={{ paddingTop: 2 }}>
-            <Typography fontWeight={600} variant="body2">
-              {row.datastore}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {row.engine}
-            </Typography>
-          </Box>
-        ),
-      },
-      {
-        field: "account",
-        headerName: "ACCOUNT",
-        flex: 1,
-        minWidth: 200,
-        renderCell: ({ row }) => (
-          <Chip
-            label={row.account}
-            variant="outlined"
-            size="small"
-            sx={{ borderRadius: 1 }}
-          />
-        ),
-      },
-      {
-        field: "dataSensitivity",
-        headerName: "SENSITIVITY",
-        width: 150,
-        renderCell: ({ row }) => {
-          const sensitivity = row.sensitivity.toUpperCase() as
-            | "RESTRICTED"
-            | "MEDIUM"
-            | "LOW"
-            | "CRITICAL"
-            | "NORMAL"; // Type assertion
-
-          // Define color mapping for sensitivity types
-          const colorMap: Record<
-            "RESTRICTED" | "MEDIUM" | "LOW" | "CRITICAL" | "NORMAL",
-            string
-          > = {
-            RESTRICTED: "#d32f2f", // Red for High Sensitivity
-            MEDIUM: "#ffa000", // Orange for Medium Sensitivity
-            LOW: "#388e3c", // Green for Low Sensitivity
-            CRITICAL: "#c2185b", // Pink for Critical Sensitivity
-            NORMAL: "#1976d2", // Blue for Normal Sensitivity
-          };
-
-          // Get the appropriate color based on sensitivity value
-          const backgroundColor = colorMap[sensitivity] || "#9e9e9e"; // Default grey for unknown sensitivity
-          const textColor = "#000"; // White text for contrast
-
-          return (
-            <Chip
-              label={sensitivity}
-              size="small"
-              sx={{
-                letterSpacing: 0.5,
-                borderRadius: "6px",
-                color: textColor,
-                backgroundColor: `${backgroundColor}30`, // 50% opacity for background
-                border: `1px solid ${backgroundColor}`,
-                height: "24px",
-                padding: "0 10px",
-              }}
-            />
-          );
-        },
-      },
-      {
-        field: "sensitiveRecords",
-        headerName: "SENSITIVE RECORDS",
-        width: 170,
-        align: "center",
-        headerAlign: "center",
-        renderCell: ({ row }) => (
-          <Typography variant="body2">{row.sensitive_records}</Typography>
-        ),
-      },
-      {
-        field: "data",
-        headerName: "DATA",
-        flex: 1,
-        renderCell: (params) => {
-          const items = params.row.data?.split(",") || [];
-
-          // Color map for known tags
-          const colorMap: Record<string, string> = {
-            PERSONAL: "#3f51b5", // Indigo
-            FINANCIAL: "#009688", // Teal
-            HEALTH: "#e91e63", // Pink
-            LEGAL: "#ff9800", // Orange
-            INTERNAL: "#607d8b", // Blue Grey
-          };
-
-          return (
-            <Box
-              display="grid"
-              gridTemplateColumns="repeat(2, max-content)"
-              gap={1}
-              sx={{ paddingTop: 2 }}
-            >
-              {items.map((item: string, index: number) => {
-                const label = item.trim().toUpperCase();
-                const baseColor = colorMap[label] || "#616161";
-
-                return (
-                  <Chip
-                    key={index}
-                    label={label}
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      letterSpacing: 0.5,
-                      borderRadius: "6px",
-                      color: baseColor,
-                      backgroundColor: `${baseColor}20`, // ~12.5% opacity
-                      border: `1px solid ${baseColor}`,
-                      height: "24px",
-                    }}
-                  />
-                );
-              })}
-            </Box>
-          );
-        },
-      },
-
-      {
-        field: "scanStatus",
-        headerName: "SCAN STATUS",
-        width: 160,
-        renderCell: ({ row }) => {
-          const status = row.scanStatus;
-          const isScanned = status === "Scanned";
-
-          return (
-            <Button
-            variant="outlined"
-            color={isScanned ? "success" : "inherit"}
-            // onClick={() => {
-            //   console.log(`Clicked on status: ${status}`);
-            // }}
-            sx={{
-              px: 2,
-              py: 0.5,
-              fontWeight: 500,
-              fontSize: "0.75rem",
-              borderRadius: "20px",
-              textTransform: "capitalize",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {isScanned ? "Rescan" : "Scan"}
-          </Button>
-        );
-      },
+    } else if (data?.data && data.data.length > 0) {
+      setLocalDataSources(data.data);
     }
+  }, [data, isLoading, error]);
 
-      // {
-      //   field: "actions",
-      //   headerName: "Actions",
-      //   width: 120,
-      //   align: "center",
-      //   renderCell: ({ row }) => (
-      //     <Box display="flex" gap={0.5} sx={{ paddingTop: 2 }}>
-      //       <Tooltip title="Edit">
-      //         <IconButton onClick={() => handleEdit(row._id)} size="small">
-      //           <Icon fontSize="small">edit</Icon>
-      //         </IconButton>
-      //       </Tooltip>
-      //       <Tooltip title="Delete">
-      //         <IconButton
-      //           onClick={() => handleDelete(row._id)}
-      //           size="small"
-      //           color="error"
-      //         >
-      //           <Icon fontSize="small">delete</Icon>
-      //         </IconButton>
-      //       </Tooltip>
-      //     </Box>
-      //   ),
-      // },
-    ],
-    [handleDelete, handleEdit, theme, selectedCompany]
-  );
+  const displayData = data?.data || localDataSources || [];
+  const total = data?.total || localDataSources?.length || 0;
 
-  const handleViewDetails = () => {
-    router.push("/admin/company/data-source/dataDetails");
-  };
-  // Filter chip data
-  const activeFilters = [
+  const handleViewDetails = useCallback(() => {
+    router.push("/company/data-source/dataDetails");
+  }, [router]);
+
+  const activeFilters = useMemo(() => [
     { name: "Cloud Provider", value: cloudProvider },
     { name: "Infrastructure", value: infrastructure },
     { name: "Account", value: account },
@@ -459,11 +448,18 @@ export default function DataSource() {
     { name: "Data Class", value: dataClass },
     { name: "Identity Name", value: identityName },
     { name: "Trust Level", value: trustLevel },
-  ].filter((filter) => filter.value);
+  ].filter((filter) => filter.value), [
+    cloudProvider,
+    infrastructure,
+    account,
+    scanStatus,
+    dataClass,
+    identityName,
+    trustLevel,
+  ]);
 
   const filterCount = activeFilters.length;
 
-  // Options for each filter (you can replace with your actual options)
   const filterOptions: Record<string, string[]> = {
     "Cloud Provider": ["AWS", "Azure", "GCP", "Alibaba Cloud"],
     Infrastructure: ["Production", "Development", "Staging", "Test"],
@@ -474,7 +470,7 @@ export default function DataSource() {
     "Trust Level": ["High", "Medium", "Low"],
   };
 
-  const renderFilterMenu = () => (
+  const renderFilterMenu = useCallback(() => (
     <Menu
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
@@ -492,23 +488,41 @@ export default function DataSource() {
         </MenuItem>
       ))}
     </Menu>
-  );
+  ), [anchorEl, handleFilterClose, currentFilter, handleFilterSelect, filterOptions]);
 
-  const handleClearAllFilters = () => {
-    setCloudProvider("");
-    setInfrastructure("");
-    setAccount("");
-    setScanStatus("");
-    setDataClass("");
-    setIdentityName("");
-    setTrustLevel("");
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+        <Typography color="error">
+          Failed to load data: {error.message}. Please check your network and backend server.
+          {typeof window !== 'undefined' && localStorage.getItem('dataSourceData') && (
+            <Typography variant="body2" mt={2}>
+              Displaying cached data from previous session.
+            </Typography>
+          )}
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Define a consistent style for decent button animations
+  const decentButtonStyles = {
+    transition: 'all 0.3s ease-in-out',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: theme.shadows[6], // A more pronounced shadow on hover
+    },
+    '&:active': {
+      transform: 'translateY(0)',
+      boxShadow: theme.shadows[2], // Reset shadow on click
+    }
   };
 
-  // if (!selectedCompany)
-  //   return <Alert severity="warning">Please Set Company Context</Alert>;
-
   return (
-    <Box pt={0} pb={0} px={3}>
+    <Box pt={0} pb={0} px={3} sx={{
+      animation: isMounted ? `${fadeIn} 0.5s ease-out` : 'none',
+      opacity: isMounted ? 1 : 0
+    }}>
       <Box
         sx={{
           display: "flex",
@@ -517,24 +531,13 @@ export default function DataSource() {
           mb: 2,
         }}
       >
-        {/* <Typography
-          sx={{
-            fontSize: "1.35rem !important",
-            color: "#30312F !important",
-            fontWeight: "600 !important",
-            position: "relative",
-            top: "2.5rem",
-          }}
-        >
-          Company: {selectedCompany?.name}
-        </Typography> */}
-
-<Box display="flex"
+        <Box
+          display="flex"
           alignItems="center"
           justifyContent="flex-end"
-          gap={1}
-          sx={{ ml: "auto" }}>
-
+          gap={2}
+          sx={{ ml: "auto" }}
+        >
           <TextField
             placeholder="Search data sources..."
             value={searchText}
@@ -577,7 +580,7 @@ export default function DataSource() {
                       },
                     }}
                   >
-                    <GridCloseIcon
+                    <GridSearchIcon
                       fontSize="small"
                       sx={{
                         color: (theme) => theme.palette.primary.main,
@@ -594,12 +597,12 @@ export default function DataSource() {
               sx: (theme) => ({
                 borderRadius: "30px",
                 background: `
-        linear-gradient(
-          to right,
-          ${alpha(theme.palette.primary.light, 0.12)},
-          ${alpha(theme.palette.background.paper, 0.8)}
-        )
-      `,
+                  linear-gradient(
+                    to right,
+                    ${alpha(theme.palette.primary.light, 0.12)},
+                    ${alpha(theme.palette.background.paper, 0.8)}
+                  )
+                `,
                 transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
                 width: "137px",
                 height: "42px",
@@ -611,12 +614,12 @@ export default function DataSource() {
                 "&.Mui-focused": {
                   width: "280px",
                   background: `
-          linear-gradient(
-            to right,
-            ${alpha(theme.palette.primary.light, 0.2)},
-            ${alpha(theme.palette.background.paper, 0.9)}
-          )
-        `,
+                    linear-gradient(
+                      to right,
+                      ${alpha(theme.palette.primary.light, 0.2)},
+                      ${alpha(theme.palette.background.paper, 0.9)}
+                    )
+                  `,
                   boxShadow: `0 4px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
                   borderColor: alpha(theme.palette.primary.main, 0.5),
                   "& .MuiSvgIcon-root": {
@@ -627,12 +630,12 @@ export default function DataSource() {
 
                 "&:hover": {
                   background: `
-          linear-gradient(
-            to right,
-            ${alpha(theme.palette.primary.light, 0.18)},
-            ${alpha(theme.palette.background.paper, 0.85)}
-          )
-        `,
+                    linear-gradient(
+                      to right,
+                      ${alpha(theme.palette.primary.light, 0.18)},
+                      ${alpha(theme.palette.background.paper, 0.85)}
+                    )
+                  `,
                   borderColor: alpha(theme.palette.primary.main, 0.6),
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
@@ -692,54 +695,76 @@ export default function DataSource() {
             }}
           />
 
-        <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-            sx={{ textTransform: "none" }}
-          >
-            Add
-          </Button>
-
           <Button
-            variant="outlined"
-            startIcon={<FilterListIcon />}
+            variant="contained"
+            startIcon={<FilterAltIcon />}
             onClick={(e) => setAnchorEl(e.currentTarget)}
+            sx={{
+              ...decentButtonStyles,
+              textTransform: "none",
+              borderRadius: "8px",
+              px: 2,
+              py: 1,
+              backgroundColor: theme.palette.mode === 'light' ? theme.palette.primary.main : theme.palette.primary.dark,
+              color: theme.palette.primary.contrastText,
+            }}
           >
             Filters {filterCount > 0 ? `(${filterCount})` : ""}
           </Button>
 
           {filterCount > 0 && (
             <Button
-              variant="text"
+              variant="contained"
               color="error"
               onClick={handleClearAllFilters}
+              sx={{
+                ...decentButtonStyles,
+                textTransform: "none",
+                borderRadius: "8px",
+                px: 2,
+                py: 1,
+                backgroundColor: theme.palette.error.main,
+                color: theme.palette.error.contrastText,
+              }}
             >
-              Clear All Filters
+              Clear All
             </Button>
           )}
 
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={handleViewDetails}
-            sx={{ textTransform: "none" }}
+            sx={{
+              ...decentButtonStyles,
+              textTransform: "none",
+              borderRadius: "8px",
+              px: 2,
+              py: 1,
+              backgroundColor: theme.palette.mode === 'light' ? theme.palette.info.main : theme.palette.info.dark,
+              color: theme.palette.info.contrastText,
+            }}
           >
             Columns
           </Button>
 
           <Button
-            variant="outlined"
+            variant="contained"
             startIcon={<DownloadIcon />}
-            onClick={() => {
-              // Add your download logic here
-              console.log("Downloading...");
+            onClick={() => console.log("Downloading...")}
+            sx={{
+              ...decentButtonStyles,
+              textTransform: "none",
+              borderRadius: "8px",
+              px: 2,
+              py: 1,
+              backgroundColor: theme.palette.mode === 'light' ? theme.palette.success.main : theme.palette.success.dark,
+              color: theme.palette.success.contrastText,
             }}
           >
             Export CSV
           </Button>
         </Box>
       </Box>
-
 
       <Paper
         sx={(theme) => ({
@@ -749,19 +774,38 @@ export default function DataSource() {
           flexWrap: "wrap",
           gap: 1,
           alignItems: "center",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          border: "1px solid rgb(212,212,212)",
-          borderColor: theme.palette.divider,
+          borderRadius: "12px",
+          boxShadow: theme.shadows[4], // Decent shadow
+          border: theme.palette.mode === 'light' ? '1px solid #e0e0e0' : '1px solid #424242', // Decent gray borders
           backgroundColor: theme.palette.background.paper,
+          transition: 'all 0.3s ease-in-out', // Smooth transition for hover effects
+          '&:hover': {
+            boxShadow: theme.shadows[6], // Subtle elevation on hover
+          }
         })}
       >
-        <Badge badgeContent={filterCount} color="primary" sx={{ mr: 1 }}>
-          <FilterAltIcon color="action" />
+        <Badge
+          badgeContent={filterCount}
+          color="primary"
+          sx={{
+            mr: 1,
+            '& .MuiBadge-badge': {
+              right: -3,
+              top: 13,
+              border: `2px solid ${theme.palette.background.paper}`,
+              padding: '0 4px',
+            }
+          }}
+        >
+          <FilterAltIcon
+            sx={{
+              color: theme.palette.action.active, // Using action.active for a neutral color
+              fontSize: '1.8rem'
+            }}
+          />
         </Badge>
 
         <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", rowGap: 1 }}>
-          {/* Filter buttons with dropdown indicators */}
           {[
             "Cloud Provider",
             "Infrastructure",
@@ -779,12 +823,19 @@ export default function DataSource() {
               endIcon={<ArrowDropDownIcon />}
               sx={(theme) => ({
                 textTransform: "none",
-                borderColor: theme.palette.divider,
+                borderRadius: "8px",
+                px: 1.5,
+                py: 0.5,
+                // Decent gray border based on mode
+                borderColor: theme.palette.mode === 'light' ? '#bdbdbd' : '#9e9e9e',
                 color: theme.palette.text.primary,
-                "&:hover": {
-                  borderColor: theme.palette.primary.main,
-                  backgroundColor: theme.palette.action.hover,
+                transition: 'all 0.3s ease-in-out', // Smooth transition
+                '&:hover': {
+                  borderColor: theme.palette.mode === 'light' ? '#757575' : '#e0e0e0', // Darker/lighter gray on hover
+                  backgroundColor: alpha(theme.palette.action.hover, 0.5), // Subtle background on hover
+                  transform: 'translateY(-1px)', // Slight lift
                 },
+                minWidth: '120px',
               })}
             >
               {filter}
@@ -801,8 +852,11 @@ export default function DataSource() {
                 textTransform: "none",
                 color: theme.palette.text.secondary,
                 ml: 1,
-                "&:hover": {
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
                   color: theme.palette.error.main,
+                  backgroundColor: alpha(theme.palette.error.main, 0.08),
+                  transform: 'translateY(-1px)',
                 },
               })}
             >
@@ -811,7 +865,6 @@ export default function DataSource() {
           )}
         </Stack>
 
-        {/* Active filter chips - shown in a separate row when space is limited */}
         <Box
           sx={{
             display: "flex",
@@ -845,23 +898,28 @@ export default function DataSource() {
 
       <Paper
         sx={(theme) => ({
-          boxShadow: theme.shadows[2],
+          boxShadow: theme.shadows[4],
           overflow: "hidden",
           backgroundColor: theme.palette.background.paper,
+          borderRadius: '12px',
+          border: 'none',
+          animation: isMounted ? `${fadeIn} 0.7s ease-out` : 'none',
+          opacity: isMounted ? 1 : 0,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: theme.shadows[6],
+          }
         })}
       >
         <Box sx={{ height: 600, width: "100%" }}>
           <DataGrid
-            rows={filteredData?.data || []}
+            rows={displayData}
             columns={columns}
-            rowCount={filteredData?.total || 0}
+            rowCount={total}
             loading={isLoading}
-            // ← here’s the checkbox column
             checkboxSelection
             rowSelectionModel={rowSelectionModel}
-            onRowSelectionModelChange={(newModel) =>
-              setRowSelectionModel(newModel)
-            }
+            onRowSelectionModelChange={(newModel) => setRowSelectionModel(newModel)}
             onRowClick={() => handleViewDetails()}
             paginationMode="server"
             sortingMode="server"
@@ -870,27 +928,58 @@ export default function DataSource() {
             onSortModelChange={setSortModel}
             getRowId={(row) => row._id}
             sx={(theme) => ({
-              border: `1px solid ${theme.palette.divider}`,
-              boxShadow: theme.shadows[1],
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: theme.palette.mode === 'light' ? '#f7f7f7' : theme.palette.background.default,
-                color: theme.palette.text.primary,
-                fontSize: "14px",
+              border: 'none',
+              '& .MuiDataGrid-columnHeaders': {
+                backgroundColor: theme.palette.background.paper, // Changed to match paper for consistent look
+                borderBottom: `1px solid ${theme.palette.divider}`,
               },
-               // ✅ Grey header cell background (stronger selector)
-              "& .MuiDataGrid-columnHeader": {
-                backgroundColor: theme.palette.mode === 'light' ? '#f0f0f0' : theme.palette.background.default,
-                color: "#424242", // Grey text color
-                fontWeight: "600",
-              },
-
-              "& .MuiDataGrid-columnHeaderTitle": {
-                color: theme.palette.text.primary,
+              '& .MuiDataGrid-columnHeaderTitle': {
                 fontWeight: 600,
+                color: theme.palette.mode === 'light' ? '#000' : '#fff', // Black for light, white for dark
               },
-              "& .MuiCheckbox-root": {
+              '& .MuiDataGrid-columnHeader': {
+                '&:focus, &:focus-within': {
+                  outline: 'none',
+                },
+              },
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                '&:focus, &:focus-within': {
+                  outline: 'none',
+                },
+              },
+              '& .MuiDataGrid-row': {
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                  transform: 'translateX(4px)',
+                },
+                '&.Mui-selected': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                  },
+                },
+              },
+              '& .MuiDataGrid-virtualScroller': {
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                  height: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: theme.palette.mode === 'light' ? '#f1f1f1' : '#2a2a2a',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: theme.palette.mode === 'light' ? theme.palette.primary.main : theme.palette.primary.dark,
+                  borderRadius: '4px',
+                },
+              },
+              '& .MuiCheckbox-root': {
                 color: theme.palette.text.secondary,
-                "&.Mui-checked": {
+                '&.Mui-checked': {
                   color: theme.palette.primary.main,
                 },
               },
@@ -902,6 +991,9 @@ export default function DataSource() {
                   alignItems="center"
                   justifyContent="center"
                   height="100%"
+                  sx={{
+                    background: alpha(theme.palette.background.paper, 0.8),
+                  }}
                 >
                   <CircularProgress size={24} />
                 </Box>
@@ -909,12 +1001,21 @@ export default function DataSource() {
               noRowsOverlay: () => (
                 <Box
                   display="flex"
+                  flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
                   height="100%"
                   color="text.secondary"
+                  sx={{
+                    background: alpha(theme.palette.background.paper, 0.8),
+                  }}
                 >
-                  No locations found
+                  <Typography variant="h6" gutterBottom>
+                    No data sources found
+                  </Typography>
+                  <Typography variant="body2">
+                    Try adjusting your filters or search query
+                  </Typography>
                 </Box>
               ),
             }}
@@ -923,4 +1024,6 @@ export default function DataSource() {
       </Paper>
     </Box>
   );
-}
+};
+
+export default CompanyDataSource;

@@ -8,8 +8,8 @@ import {
   Button,
   Tabs,
   Tab,
-  Menu,
-  MenuItem,
+//   Menu,
+//   MenuItem,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { usePathname, useRouter } from "next/navigation";
@@ -141,7 +141,7 @@ export default function DataSourceLayout({
             >
             Actions
             </Button>
-            <Menu
+            {/* <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
@@ -175,7 +175,7 @@ export default function DataSourceLayout({
             >
                 Delete Data
             </MenuItem>
-            </Menu>
+            </Menu> */}
         </Box>
 
         <Divider

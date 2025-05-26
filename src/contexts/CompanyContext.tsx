@@ -4,7 +4,9 @@ import { createContext, useContext, useState, ReactNode } from "react";
 export interface Company {
   _id: number;
   name: string;
-  // Add other fields if needed
+    status?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface CompanyContextType {
@@ -18,7 +20,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
   return (
-    <CompanyContext.Provider value={{ selectedCompany, setSelectedCompany }}>
+    <CompanyContext.Provider value={{ selectedCompany, setSelectedCompany  }}>
       {children}
     </CompanyContext.Provider>
   );

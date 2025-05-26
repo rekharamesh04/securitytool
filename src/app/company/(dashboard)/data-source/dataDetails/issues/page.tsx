@@ -1,4 +1,4 @@
-import IssuesPage from "@/app/admin/(dashboard)/company/data-source/issues/page";
+import IssuesPage from "@/components/company/data-source/issues";
 import DataSourceLayout from "@/components/company/data-source/DataSourceLayout";
 
 export default function IssuesTab() {

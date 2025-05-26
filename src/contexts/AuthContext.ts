@@ -18,9 +18,9 @@ export interface AuthContextProps extends State {
 }
 
 export type AuthAction =
-    | { type: 'INITIAL'; payload: Omit<State, 'isInitialized'> }
-    | { type: 'LOGIN'; payload: Omit<State, 'isInitialized'> }
-    | { type: 'REGISTER'; payload: Omit<State, 'isAuthenticated'> }
+    | { type: 'INITIAL'; payload: { isAuthenticated: boolean; user: UserModel | null } }
+    | { type: 'LOGIN'; payload: { isAuthenticated: boolean; user: UserModel } }
+    | { type: 'REGISTER'; payload: { isAuthenticated: boolean; user: UserModel } } // Fixed: Now includes isAuthenticated
     | { type: 'LOGOUT' };
 
 export const initialState: State = {
@@ -37,4 +37,3 @@ export const AuthContext = createContext<AuthContextProps>({
     register: () => Promise.resolve(),
     initialize: () => Promise.resolve(),
 });
-

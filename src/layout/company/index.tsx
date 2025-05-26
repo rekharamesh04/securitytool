@@ -6,28 +6,16 @@ import Image from "next/image";
 import { createTheme, alpha } from "@mui/material/styles";
 import { PageContainer } from "@toolpad/core";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
-import { CompanyProvider, useCompanyContext } from "@/contexts/CompanyContext";
+import { CompanyProvider } from "@/contexts/CompanyContext";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import adminNavigation from "./navigation";
 import { NextAppProvider } from "@toolpad/core/nextjs";
-import {
-  Avatar,
-  Box,
-  Divider,
-  // IconButton,
-  Menu,
-  MenuItem,
-  // Tooltip,
-  Typography,
-} from "@mui/material";
-import {
-  Logout,
-  // NightsStay,
-  // WbSunny,
-} from "@mui/icons-material";
-// import { ThemeProvider } from "@emotion/react";
-import defaultTheme from "@/theme/theme";
+import { Box, IconButton, Tooltip } from "@mui/material";
+// import defaultTheme from "@/theme/theme";
+import { CompanyUserMenu } from "@/components/CompanyUserMenu";
+import { NightsStay, WbSunny } from "@mui/icons-material";
+import { CompanyAuthProvider } from "@/contexts/CompanyAuthContext";
 
 interface LayoutProps {
   window?: () => Window;
@@ -36,7 +24,8 @@ interface LayoutProps {
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { selectedCompany } = useCompanyContext();
+  const { user } = useCompanyAuth();
+  const companyName = user?.company?.name || "Unknown Company";
 
   const pageContainerStyles: SxProps<Theme> = {
     color: (theme) => theme.palette.text.primary,
@@ -122,8 +111,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <PageContainer
       title={
-        pathname === "/admin/company/data-source" && selectedCompany
-          ? `Data Source · ${selectedCompany.name}`
+        pathname === "/company/data-source"
+          ? `Data Source · ${companyName}`
           : undefined
       }
       sx={pageContainerStyles}
@@ -138,10 +127,10 @@ export default function CompanyAdminLayout(props: LayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useCompanyAuth();
-  // Remove this const when copying and pasting into your project.
   const demoWindow = window !== undefined ? window() : undefined;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -150,14 +139,19 @@ export default function CompanyAdminLayout(props: LayoutProps) {
   };
 
   const [mode, setMode] = React.useState<"light" | "dark">("light");
+  const colorMode = React.useMemo(
+    () => ({
+      toggleColorMode: () => {
+        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+      },
+    }),
+    []
+  );
 
-  // Create a theme based on the current mode
-  const currentTheme = React.useMemo(
+  const theme = React.useMemo(
     () =>
       createTheme({
-        ...defaultTheme,
         palette: {
-          ...defaultTheme.palette,
           mode,
           primary: {
             main: "#5D87FF",
@@ -175,19 +169,53 @@ export default function CompanyAdminLayout(props: LayoutProps) {
             default: mode === "light" ? "#F8FAFC" : "#121212",
             paper: mode === "light" ? "#F5F7FF" : "#1A1A1A",
           },
+          text: {
+            primary: mode === "light" ? "#2A3547" : "#F0F0F0",
+            secondary: mode === "light" ? "#5A6A85" : "#B0B0B0",
+          },
+          divider:
+            mode === "light"
+              ? "rgba(0, 0, 0, 0.08)"
+              : "rgba(255, 255, 255, 0.08)",
+        },
+        typography: {
+          fontFamily: "'Inter', sans-serif",
+          h1: { fontFamily: "'Poppins', sans-serif" },
+          h2: { fontFamily: "'Poppins', sans-serif" },
+          h3: { fontFamily: "'Poppins', sans-serif" },
+          h4: { fontFamily: "'Poppins', sans-serif" },
+          h5: { fontFamily: "'Poppins', sans-serif" },
+          h6: { fontFamily: "'Poppins', sans-serif" },
+        },
+        shape: {
+          borderRadius: 12,
+        },
+        components: {
+          MuiButton: {
+            styleOverrides: {
+              root: {
+                textTransform: "none",
+                fontWeight: 600,
+                letterSpacing: 0.5,
+                padding: "10px 24px",
+                borderRadius: "12px",
+              },
+            },
+          },
+          MuiPaper: {
+            styleOverrides: {
+              root: {
+                boxShadow:
+                  mode === "light"
+                    ? "0 2px 10px 0 rgba(0, 0, 0, 0.05)"
+                    : "0 2px 10px 0 rgba(0, 0, 0, 0.2)",
+              },
+            },
+          },
         },
       }),
     [mode]
   );
-
-  // const { toggleColorMode } = React.useMemo(
-  //   () => ({
-  //     toggleColorMode: () => {
-  //       setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
-  //     },
-  //   }),
-  //   []
-  // );
 
   const dashboardStyles: SxProps<Theme> = {
     flex: 1,
@@ -302,72 +330,53 @@ export default function CompanyAdminLayout(props: LayoutProps) {
     },
   };
 
-  const session = React.useMemo(
-    () => ({
-      user: user
-        ? {
-            ...user,
-            // Add image property if it doesn't exist on user
-            image: (user as any).image || "/default-avatar.png",
-          }
-        : undefined,
-    }),
-    [user]
-  );
-
   return (
-      <NextAppProvider
-        navigation={adminNavigation}
-        branding={{
-          logo: (
-            <Box
-              sx={{
-                borderRadius: "12px",
-                overflow: "hidden",
-                width: 150,
-                height: 40,
-                position: "relative",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  transform: "scale(1.03)",
-                },
+    <NextAppProvider
+      navigation={adminNavigation}
+      branding={{
+        logo: (
+          <Box
+            sx={{
+              borderRadius: "12px",
+              overflow: "hidden",
+              width: 150,
+              height: 40,
+              position: "relative",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                transform: "scale(1.03)",
+              },
+            }}
+          >
+            <Image
+              src="/continental-battery-logo-horizontal.svg"
+              alt="Monitoring App"
+              fill
+              style={{
+                objectFit: "contain",
+                filter:
+                  theme.palette.mode === "dark"
+                  ? 'brightness(0) invert(1)'
+                  : 'brightness(0) saturate(100%) invert(8%) sepia(100%) saturate(7239%) hue-rotate(358deg) brightness(89%) contrast(101%)'
               }}
-            >
-              <Image
-                src="/logo.png"
-                alt="Monitoring App"
-                fill
-                style={{
-                  objectFit: "contain",
-                  filter:
-                    mode === "dark" ? "brightness(0.8) contrast(1.2)" : "none",
-                }}
-              />
-            </Box>
-          ),
-          title: "",
-          homeUrl: "/admin",
-        }}
-        router={{
-          navigate: (segment: any) => {
-            router.push(segment);
-          },
-          pathname: pathname,
-          searchParams: new URLSearchParams(),
-        }}
-        theme={currentTheme}
-        window={demoWindow}
-        session={session}
-        // authentication={{
-        //   signIn: () => {
-        //     console.log("Sign in");
-        //   },
-        //   signOut: () => {
-        //     logout();
-        //   },
-        // }}
-      >
-      <CompanyProvider>
+            />
+          </Box>
+        ),
+        title: "",
+        homeUrl: "/admin",
+      }}
+      router={{
+        navigate: (segment: any) => {
+          router.push(segment);
+        },
+        pathname: pathname,
+        searchParams: new URLSearchParams(),
+      }}
+      theme={theme}
+      window={demoWindow}
+    >
+      <CompanyAuthProvider>
+              <CompanyProvider>
         <Box
           sx={{
             display: "flex",
@@ -397,7 +406,7 @@ export default function CompanyAdminLayout(props: LayoutProps) {
 
             <Box
               sx={{
-                position: "absolute",
+                position: "fixed",
                 right: 24,
                 top: 12,
                 display: "flex",
@@ -406,151 +415,50 @@ export default function CompanyAdminLayout(props: LayoutProps) {
                 zIndex: 1300,
               }}
             >
-              {/* Keep only this single theme toggle */}
-              {/* <Tooltip title={mode === "light" ? "Dark Mode" : "Light Mode"} arrow>
+              <Tooltip title="Toggle Theme" arrow>
                 <IconButton
-                  onClick={toggleColorMode}
+                  onClick={colorMode.toggleColorMode}
                   color="inherit"
                   sx={{
                     height: 40,
                     width: 40,
-                    borderRadius: "12px",
+                    borderRadius: "20px",
                     backgroundColor: (theme) =>
-                      mode === "light"
+                      theme.palette.mode === "light"
                         ? alpha(theme.palette.primary.light, 0.2)
                         : alpha(theme.palette.primary.dark, 0.3),
-                    transition: "all 0.3s ease",
+                    transition: "all 0.2s ease",
                     "&:hover": {
                       backgroundColor: (theme) =>
-                        mode === "light"
+                        theme.palette.mode === "light"
                           ? alpha(theme.palette.primary.light, 0.3)
                           : alpha(theme.palette.primary.dark, 0.4),
                       transform: "scale(1.1)",
                     },
                   }}
                 >
-                  {mode === "dark" ? (
+                  {theme.palette.mode === "dark" ? (
                     <WbSunny fontSize="small" />
                   ) : (
                     <NightsStay fontSize="small" />
                   )}
                 </IconButton>
-              </Tooltip> */}
-
-              {/* User Menu */}
-              <Box
-                className="user-menu"
-                onClick={handleClick}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginRight: "2.5rem"
-                }}
-              >
-                <Avatar
-                  className="user-avatar"
-                  src={(user as any)?.image || "/default-avatar.png"}
-                  sx={{
-                    bgcolor: currentTheme.palette.primary.main,
-                    width: 36,
-                    height: 36,
-                  }}
+              </Tooltip>
+              {user && (
+                <CompanyUserMenu
+                  user={user}
+                  handleMenuOpen={handleClick}
+                  anchorEl={anchorEl}
+                  open={open}
+                  handleMenuClose={handleClose}
+                  logout={logout}
                 />
-              </Box>
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                onClick={handleClose}
-                PaperProps={{
-                  elevation: 0,
-                  sx: {
-                    overflow: "visible",
-                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.15))",
-                    width: 240,
-                    mt: 1.5,
-                    borderRadius: "12px",
-                    border: (theme: Theme) =>
-                      `1px solid ${
-                        theme.palette.mode === "light"
-                          ? "rgba(93, 135, 255, 0.2)"
-                          : "rgba(255, 255, 255, 0.1)"
-                      }`,
-                    "& .MuiAvatar-root": {
-                      width: 32,
-                      height: 32,
-                      ml: -0.5,
-                      mr: 1,
-                    },
-                    "&:before": {
-                      content: '""',
-                      display: "block",
-                      position: "absolute",
-                      top: 0,
-                      right: 14,
-                      width: 10,
-                      height: 10,
-                      bgcolor: "background.paper",
-                      transform: "translateY(-50%) rotate(45deg)",
-                      zIndex: 0,
-                    },
-                  },
-                }}
-                transformOrigin={{ horizontal: "right", vertical: "top" }}
-                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              >
-                <MenuItem
-                  sx={{
-                    "&:hover": {
-                      backgroundColor: alpha(
-                        currentTheme.palette.primary.light,
-                        0.2
-                      ),
-                    },
-                  }}
-                >
-                  <Avatar
-                    src={(user as any)?.image || "/default-avatar.png"}
-                    sx={{
-                      bgcolor: currentTheme.palette.primary.main,
-                      width: 40,
-                      height: 40,
-                      mr: 2,
-                    }}
-                  />
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {user?.name || "User"}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {user?.email || "user@example.com"}
-                    </Typography>
-                  </Box>
-                </MenuItem>
-                <Divider sx={{ my: 0.5 }} />
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    logout();
-                  }}
-                  sx={{
-                    color: currentTheme.palette.error.main,
-                    "&:hover": {
-                      backgroundColor: alpha(
-                        currentTheme.palette.error.light,
-                        0.2
-                      ),
-                    },
-                  }}
-                >
-                  <Logout fontSize="small" sx={{ mr: 1.5 }} />
-                  Sign Out
-                </MenuItem>
-              </Menu>
+              )}
             </Box>
           </DashboardLayout>
         </Box>
       </CompanyProvider>
-      </NextAppProvider>
+      </CompanyAuthProvider>
+    </NextAppProvider>
   );
 }
