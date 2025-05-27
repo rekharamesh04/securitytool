@@ -26,7 +26,7 @@ import {
   GridSortModel,
 } from "@mui/x-data-grid";
 import { useDialogs, useNotifications } from "@toolpad/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { fetchUrl } from "./constant";
 import theme from "@/theme/theme";
@@ -40,6 +40,7 @@ import { alpha } from "@mui/system";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import DownloadIcon from "@mui/icons-material/Download";
 import AddIcon from "@mui/icons-material/Add";
+import ScanProgressDialog from "./scanProgressBar";
 
 export default function DataSource() {
   const dialogs = useDialogs();
@@ -65,7 +66,12 @@ export default function DataSource() {
   const [dataClass, setDataClass] = useState<string>("");
   const [identityName, setIdentityName] = useState<string>("");
   const [trustLevel, setTrustLevel] = useState<string>("");
-  const [, setScanningId] = useState<string | null>(null);
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [currentlyScanningId, setCurrentlyScanningId] = useState<string | null>(
+    null
+  );
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentFilter, setCurrentFilter] = useState<string>("");
@@ -246,25 +252,47 @@ export default function DataSource() {
   );
 
   const handleScan = async (id: string) => {
-    setScanningId(id);
+    setCurrentlyScanningId(id);
+    setScanProgress(0);
+    setScanDialogOpen(true);
+
+    // Start fake progress updates
+    intervalRef.current = setInterval(() => {
+      setScanProgress((prev) => {
+        const next = Math.min(prev + 10, 100);
+        if (next >= 100 && intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+        return next;
+      });
+    }, 500);
+
     try {
-      const response = await axiosInstance.post(`/admin/company/data-source/${id}/scan`);
+      const response = await axiosInstance.post(
+        `/admin/company/data-source/${id}/scan`
+      );
+      console.log(response);
+      clearInterval(intervalRef.current!);
+      setScanProgress(100);
+
+      setTimeout(() => {
+        setScanDialogOpen(false);
+        setCurrentlyScanningId(null);
+      }, 800);
 
       mutate(`${fetchUrl}?${params}`, { revalidate: true });
 
-      const { data } = response;
       notifications.show(data.message || "Scan completed successfully", {
         severity: "success",
       });
     } catch (error: any) {
-      console.error("Scan error:", error);
+      clearInterval(intervalRef.current!);
+      setScanDialogOpen(false);
+      setCurrentlyScanningId(null);
 
-      notifications.show(
-        error?.response?.data?.message || "Scan failed",
-        { severity: "error" }
-      );
-    } finally {
-      setScanningId(null);
+      notifications.show(error?.response?.data?.message || "Scan failed", {
+        severity: "error",
+      });
     }
   };
 
@@ -324,20 +352,18 @@ export default function DataSource() {
         renderCell: ({ row }) => {
           const sensitivity = row.sensitivity?.toUpperCase() as
             | "RESTRICTED"
-            | "MEDIUM"
-            | "LOW"
-            | "CRITICAL"
-            | "NORMAL";
+            | "confidential"
+            | "internal"
+            | "public";
 
           const colorMap: Record<
-            "RESTRICTED" | "MEDIUM" | "LOW" | "CRITICAL" | "NORMAL",
+            "RESTRICTED" | "confidential" | "internal" | "public",
             string
           > = {
-            RESTRICTED: "#ff3d3d",
-            MEDIUM: "#ffa000",
-            LOW: "#388e3c",
-            CRITICAL: "#c2185b",
-            NORMAL: "#1976d2",
+           RESTRICTED: "#ff3d3d",
+            confidential: "#ffa000",
+            internal: "#388e3c",
+            public: "#c2185b",
           };
 
           const backgroundColor = colorMap[sensitivity] || "#9e9e9e";
@@ -365,16 +391,29 @@ export default function DataSource() {
         width: 170,
         align: "center",
         headerAlign: "center",
-        renderCell: ({ row }) => (
-          <Typography variant="body2" sx={{ paddingTop: 2 }}>{row.sensitive_records}</Typography>
-        ),
+        renderCell: ({ row }) => {
+          if (!row.latestScan) {
+            return <Typography variant="body2">0</Typography>;
+          }
+
+          const total = row.latestScan.summary?.total_sensitive_items ?? 0;
+
+          return (
+            <Box sx={{ pt: 1 }}>
+              <Typography variant="body2">{total}</Typography>
+            </Box>
+          );
+        },
       },
       {
         field: "data",
         headerName: "DATA",
         flex: 1,
         renderCell: (params) => {
-          const items = params.row.data?.split(",") || [];
+          // Get the categories from the by_category object
+          const categories = params.row.latestScan?.summary?.by_category
+            ? Object.keys(params.row.latestScan.summary.by_category)
+            : [];
 
           const colorMap: Record<string, string> = {
             PERSONAL: "#3f51b5",
@@ -391,8 +430,8 @@ export default function DataSource() {
               gap={1}
               sx={{ paddingTop: 2 }}
             >
-              {items.map((item: string, index: number) => {
-                const label = item.trim().toUpperCase();
+              {categories.map((category: string, index: number) => {
+                const label = category.trim().toUpperCase();
                 const baseColor = colorMap[label] || "#616161";
 
                 return (
@@ -423,12 +462,14 @@ export default function DataSource() {
         renderCell: ({ row }) => {
           const status = row.scanStatus;
           const isScanned = status === "Scanned";
+          const isScanning = currentlyScanningId === row._id;
 
           return (
             <Button
               variant="outlined"
               color={isScanned ? "success" : "inherit"}
               onClick={() => handleScan(row._id)}
+              disabled={isScanning}
               sx={{
                 px: 2,
                 py: 0.5,
@@ -437,9 +478,13 @@ export default function DataSource() {
                 borderRadius: "5px",
                 textTransform: "capitalize",
                 whiteSpace: "nowrap",
+                "&:disabled": {
+                  opacity: 0.5,
+                  cursor: "not-allowed",
+                },
               }}
             >
-              {isScanned ? "Rescan" : "Scan"}
+              {isScanning ? "Scanning..." : isScanned ? "Rescan" : "Scan"}
             </Button>
           );
         },
@@ -687,7 +732,7 @@ export default function DataSource() {
             onClick={handleAdd}
             sx={{
               textTransform: "none",
-              
+
             }}
           >
             Add
@@ -909,6 +954,16 @@ export default function DataSource() {
                   color: theme.palette.primary.main,
                 },
               },
+              // Fix for selected row styles interfering with Chip
+              "& .MuiDataGrid-row.Mui-selected": {
+                backgroundColor: "transparent", // Remove default selected background
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)", // Optional: Slight hover effect
+                },
+              },
+              "& .MuiDataGrid-cell.Mui-selected": {
+                borderColor: "transparent", // Remove cell selection border
+              },
             })}
             slots={{
               loadingOverlay: () => (
@@ -936,6 +991,7 @@ export default function DataSource() {
           />
         </Box>
       </Paper>
+      <ScanProgressDialog open={scanDialogOpen} progress={scanProgress} />
     </Box>
   );
 }

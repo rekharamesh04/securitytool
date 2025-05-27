@@ -8,6 +8,10 @@ export const defaultValues = {
   sensitivity: '',
   sensitive_records: '',
   data: '',
+  access_key_id: '',
+  secret_access_key: '',
+  region: '',
+  bucket_name: '',
   status: true,
 };
 
@@ -25,8 +29,12 @@ export interface FormModel {
   awsRegion?: string;
   s3BucketName?: string;
   selectedSubCategory: string;
-  rdsEngine?: string; // ✅ add this
+  database_engine?: string; // ✅ add this
   data: string;
+  access_key_id: string;
+  secret_access_key: string;
+  region: string;
+  bucket_name: string;
   status: boolean;
   // For MongoDB Atlas
   connectionString?: string;

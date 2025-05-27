@@ -43,22 +43,22 @@ import theme from "@/theme/theme";
 //   data: yup.string().required("Data is required"),
   // status: yup.boolean().required(),
 
-//   awsAccessKeyId: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//   your_access_key: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
 //     return datastore === "AWS" && subCategory === "S3"
 //       ? schema.required("AWS Access Key ID is required")
 //       : schema.notRequired();
 //   }),
-//   awsSecretAccessKey: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//   your_secret_key: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
 //     return datastore === "AWS" && subCategory === "S3"
 //       ? schema.required("AWS Secret Access Key is required")
 //       : schema.notRequired();
 //   }),
-//   awsRegion: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//   region: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
 //     return datastore === "AWS" && subCategory === "S3"
 //       ? schema.required("AWS Region is required")
 //       : schema.notRequired();
 //   }),
-//   s3BucketName: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
+//   bucket_name: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
 //     return datastore === "AWS" && subCategory === "S3"
 //       ? schema.required("S3 Bucket Name is required")
 //       : schema.notRequired();
@@ -293,10 +293,10 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
             reset({
               ...data,
               company: data.company,
-              awsAccessKeyId: accountData.awsAccessKeyId,
-              awsSecretAccessKey: accountData.awsSecretAccessKey,
-              awsRegion: accountData.awsRegion,
-              s3BucketName: accountData.s3BucketName,
+              access_key_id: accountData.access_key_id,
+              secret_access_key: accountData.secret_access_key,
+              region: accountData.region,
+              bucket_name: accountData.bucket_name,
             });
           } catch {
             reset({
@@ -348,6 +348,10 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
       const payload: any = {
         company: data.company,
         datastore: data.datastore,
+        access_key_id: data.access_key_id,
+        secret_access_key: data.secret_access_key,
+        region: data.region,
+        bucket_name: data.bucket_name,
         subCategory: data.subCategory || null,
       };
 
@@ -1535,41 +1539,42 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
               <TextField
                 label="AWS Access Key ID"
                 fullWidth
+                {...register("access_key_id")}
                 margin="normal"
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.awsAccessKeyId}
-                helperText={errors.awsAccessKeyId?.message}
-                {...register("awsAccessKeyId")}
+                error={!!errors.access_key_id}
+                helperText={errors.access_key_id?.message}
               />
 
               <TextField
                 label="AWS Secret Access Key"
                 fullWidth
                 margin="normal"
+                {...register("secret_access_key")}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.awsSecretAccessKey}
-                helperText={errors.awsSecretAccessKey?.message}
-                {...register("awsSecretAccessKey")}
+                error={!!errors.secret_access_key}
+                helperText={errors.secret_access_key?.message}
               />
+
 
               <TextField
                 label="AWS Region"
                 fullWidth
                 margin="normal"
+                {...register("region")}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.awsRegion}
-                helperText={errors.awsRegion?.message || "Example: us-east-1"}
-                {...register("awsRegion")}
+                error={!!errors.region}
+                helperText={errors.region?.message || "Example: us-east-1"}
               />
 
               <TextField
                 label="S3 Bucket Name"
                 fullWidth
                 margin="normal"
+                {...register("bucket_name")}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.s3BucketName}
-                helperText={errors.s3BucketName?.message}
-                {...register("s3BucketName")}
+                error={!!errors.bucket_name}
+                helperText={errors.bucket_name?.message}
               />
             </>
           ) : isAWSEC2 ? (
@@ -1619,17 +1624,17 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
               <Autocomplete
                 options={RDS_ENGINE_OPTIONS}
                 getOptionLabel={(option) => option}
-                // onChange={(_, newValue) =>
-                //   setValue("rdsEngine", newValue || "")
-                // }
+                onChange={(_, newValue) =>
+                  setValue("database_engine", newValue || "")
+                }
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     label="Database Engine"
                     fullWidth
                     margin="normal"
-                    // error={!!errors.rdsEngine}
-                    // helperText={errors.rdsEngine?.message}
+                    error={!!errors.database_engine}
+                    helperText={errors.database_engine?.message}
                     InputLabelProps={{ shrink: true }}
                   />
                 )}
@@ -1643,10 +1648,10 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
                 error={!!errors.account}
                 helperText={
                   errors.account?.message ||
-                  `Example: ${getConnectionStringExample(watch("rdsEngine") || "MySQL")}`
+                  `Example: ${getConnectionStringExample(watch("account") || "MySQL")}`
                 }
                 placeholder={getConnectionStringExample(
-                  watch("rdsEngine") || "MySQL"
+                  watch("account") || "MySQL"
                 )}
                 InputLabelProps={{ shrink: true }}
               />
