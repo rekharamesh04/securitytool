@@ -4,23 +4,50 @@ import {
   Menu,
   MenuItem,
   Divider,
-  Button,
+  Button, // Keep Button here, as it's rendered by UserMenu
   Avatar,
   Box,
   Typography,
   ListItemIcon,
   Badge,
+  ListItemText,
 } from "@mui/material";
 import { Logout, Email } from "@mui/icons-material";
 import { Theme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
+
+const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
+  padding: "12px 16px",
+  borderRadius: "8px",
+  margin: "4px 8px",
+  transition: "all 0.2s ease",
+  "&:hover": {
+    backgroundColor:
+      theme.palette.mode === "light"
+        ? "rgba(93, 135, 255, 0.1)"
+        : "rgba(255, 255, 255, 0.1)",
+    transform: "translateX(4px)",
+  },
+}));
+
+const UserInfoMenuItem = styled(MenuItem)(({ theme }) => ({
+  padding: "16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  cursor: "default",
+  backgroundColor: theme.palette.mode === "light" ? "#ffffff" : "#1A1A1A",
+  "&:hover": {
+    backgroundColor: theme.palette.mode === "light" ? "#ffffff" : "#1A1A1A",
+  },
+}));
 
 export const UserMenu = ({
   user,
-  handleMenuOpen,
+  handleMenuOpen, // This prop is used internally by UserMenu
   anchorEl,
   open,
   handleMenuClose,
-  // handleNavigation,
   logout,
 }: {
   user: any;
@@ -28,84 +55,77 @@ export const UserMenu = ({
   anchorEl: HTMLElement | null;
   open: boolean;
   handleMenuClose: () => void;
-  handleNavigation: (url: string) => void;
   logout: () => void;
 }) => (
   <>
-    <Box
+    {/* This Button is what you'll see in the UI and what triggers the menu */}
+    <Button
+      onClick={handleMenuOpen}
       sx={{
         display: "flex",
         alignItems: "center",
+        gap: 1,
+        color: "inherit",
+        textTransform: "none",
+        minWidth: "auto",
+        padding: "4px 8px",
+        boxSizing: "border-box",
+        "&:hover": {
+          backgroundColor: "rgba(255, 255, 255, 0.08)",
+        },
       }}
     >
-      <Button
-        onClick={handleMenuOpen}
+      <Badge
+        overlap="circular"
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        variant="dot"
         sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          color: "inherit",
-          textTransform: "none",
-          minWidth: "auto",
-          padding: "4px 8px",
-          boxSizing: "border-box",
-          "&:hover": {
-            backgroundColor: "rgba(255, 255, 255, 0.08)",
+          "& .MuiBadge-badge": {
+            backgroundColor: "#44b700",
+            color: "#44b700",
+            boxShadow: (theme) => `0 0 0 2px ${theme.palette.background.paper}`,
+            "&::after": {
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              animation: "ripple 1.2s infinite ease-in-out",
+              border: "1px solid currentColor",
+              content: '""',
+            },
+          },
+          "@keyframes ripple": {
+            "0%": {
+              transform: "scale(.8)",
+              opacity: 1,
+            },
+            "100%": {
+              transform: "scale(2.4)",
+              opacity: 0,
+            },
           },
         }}
       >
-        <Badge
-          overlap="circular"
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          variant="dot"
+        <Avatar
           sx={{
-            "& .MuiBadge-badge": {
-              backgroundColor: "#44b700",
-              color: "#44b700",
-              boxShadow: (theme) => `0 0 0 2px ${theme.palette.background.paper}`,
-              "&::after": {
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                borderRadius: "50%",
-                animation: "ripple 1.2s infinite ease-in-out",
-                border: "1px solid currentColor",
-                content: '""',
-              },
-            },
-            "@keyframes ripple": {
-              "0%": {
-                transform: "scale(.8)",
-                opacity: 1,
-              },
-              "100%": {
-                transform: "scale(2.4)",
-                opacity: 0,
-              },
-            },
+            width: 42,
+            height: 42,
+            backgroundColor: (theme: Theme) =>
+              theme.palette.mode === "light" ? "#375199" : "#4a6ccc",
+            color: "white",
+            fontSize: "1.25rem",
+            fontWeight: 500,
+            boxSizing: "border-box",
+            border: "2px solid",
+            borderColor: (theme) => theme.palette.primary.main,
           }}
         >
-          <Avatar
-            sx={{
-              width: 42,
-              height: 42,
-              backgroundColor: (theme: Theme) =>
-                theme.palette.mode === "light" ? "#375199" : "#4a6ccc",
-              color: "white",
-              fontSize: "1.25rem",
-              fontWeight: 500,
-              boxSizing: "border-box",
-              border: "2px solid",
-              borderColor: (theme) => theme.palette.primary.main,
-            }}
-          >
-            {user?.name?.charAt(0)?.toUpperCase() || "U"}
-          </Avatar>
-        </Badge>
-      </Button>
-    </Box>
+          {user?.name?.charAt(0)?.toUpperCase() || "U"}
+        </Avatar>
+      </Badge>
+    </Button>
 
     <Menu
       anchorEl={anchorEl}
@@ -158,10 +178,9 @@ export const UserMenu = ({
       transformOrigin={{ horizontal: "right", vertical: "top" }}
       anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
     >
-      <MenuItem
+      <UserInfoMenuItem
         disabled
         sx={{
-          py: 1.5,
           backgroundColor: "transparent !important",
           opacity: 1,
           "&.Mui-disabled": {
@@ -196,55 +215,53 @@ export const UserMenu = ({
           </Avatar>
           <Box>
             <Typography
-              variant="subtitle2"
+              variant="subtitle1"
+              fontWeight={700}
               sx={{
                 color: (theme) => theme.palette.text.primary,
-                fontSize: "1.25rem",
-                fontWeight: "bold",
-                lineHeight: 1.3,
-                mb: 0.5,
+                fontSize: "1.1rem",
               }}
             >
               {user?.name}
             </Typography>
-
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <ListItemIcon
-                sx={{
-                  color: (theme) => theme.palette.text.secondary,
-                  fontSize: "2rem",
-                  ml: 1,
-                }}
-              >
-                <Email fontSize="small" />
-              </ListItemIcon>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: (theme) => theme.palette.text.secondary,
-                  fontSize: "1rem",
-                  lineHeight: 1.3,
-                  mr: 1,
-                }}
-              >
-                {user?.email}
-              </Typography>
-            </Box>
+            <Typography
+              variant="body2"
+              sx={{
+                color: (theme) => theme.palette.text.secondary,
+                fontSize: "0.875rem",
+                display: "flex",
+                alignItems: "center",
+                mt: 0.5,
+              }}
+            >
+              <Email
+                fontSize="small"
+                sx={{ mr: 1, opacity: 0.7, fontSize: "1rem" }}
+              />
+              {user?.email}
+            </Typography>
           </Box>
         </Box>
-      </MenuItem>
-      <Divider />
-      <MenuItem
+      </UserInfoMenuItem>
+      <Divider
+        sx={{
+          my: 0,
+          borderColor: (theme) =>
+            theme.palette.mode === "light"
+              ? "rgba(93, 135, 255, 0.2)"
+              : "rgba(255, 255, 255, 0.1)",
+        }}
+      />
+      <StyledMenuItem
         onClick={() => {
           handleMenuClose();
           logout();
         }}
         sx={{
-          py: 1.5,
-          mt: 0.5,
-          transition: "background-color 0.2s ease",
+          color: (theme) => theme.palette.error.main,
           "&:hover": {
-            backgroundColor: (theme) => theme.palette.error.light,
+            backgroundColor: (theme) =>
+              theme.palette.error.light + "!important",
             color: "#fff",
             "& .MuiListItemIcon-root": {
               color: "#fff",
@@ -252,13 +269,11 @@ export const UserMenu = ({
           },
         }}
       >
-        <ListItemIcon sx={{ minWidth: 36, ml: "20px" }}>
+        <ListItemIcon sx={{ color: "inherit" }}>
           <Logout fontSize="small" />
         </ListItemIcon>
-        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "1rem" }}>
-          Sign Out
-        </Typography>
-      </MenuItem>
+        <ListItemText>Sign Out</ListItemText>
+      </StyledMenuItem>
     </Menu>
   </>
 );

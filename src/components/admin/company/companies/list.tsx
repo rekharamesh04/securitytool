@@ -33,7 +33,7 @@ import { Add } from "@mui/icons-material";
 interface Company {
   _id: number;
   name: string;
-  // Add other fields if needed
+  image?: string;
 }
 
 export default function CompanyList() {
@@ -160,44 +160,44 @@ export default function CompanyList() {
         },
         width: 200,
       },
-      // {
-      //   field: "image",
-      //   headerName: "Logo",
-      //   width: 80,
-      //   renderCell: (params: any) => {
-      //     const logoUrl = params.row.image || params.row.logo;
-      //     return (
-      //       <Box
-      //         sx={{
-      //           width: 40,
-      //           height: 40,
-      //           borderRadius: "50%",
-      //           overflow: "hidden",
-      //           border: "1px solid #e0e0e0",
-      //           display: "flex",
-      //           justifyContent: "center",
-      //           alignItems: "center",
-      //           backgroundColor: logoUrl ? "transparent" : "#f5f5f5",
-      //           marginTop: "5px",
-      //         }}
-      //       >
-      //         {logoUrl ? (
-      //           <img
-      //             src={logoUrl}
-      //             alt="Company Logo"
-      //             style={{
-      //               width: "100%",
-      //               height: "100%",
-      //               objectFit: "cover",
-      //             }}
-      //           />
-      //         ) : (
-      //           <Icon sx={{ color: "#9e9e9e", fontSize: "20px" }}>image</Icon>
-      //         )}
-      //       </Box>
-      //     );
-      //   },
-      // },
+    {
+        field: "image",
+        headerName: "Logo",
+        width: 80,
+        renderCell: (params: any) => {
+          const logoUrl = params.row.image ? `${params.row.image}` : null; // Backend provides relative path
+          return (
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "1px solid #e0e0e0",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: logoUrl ? "transparent" : "#f5f5f5",
+                marginTop: "5px",
+                }}
+              >
+                {logoUrl ? (
+                  <img
+                    src={logoUrl} // Use the relative path directly
+                    alt="Company Logo"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <Icon sx={{ color: "#9e9e9e", fontSize: "20px" }}>image</Icon>
+                )}
+              </Box>
+            );
+          },
+      },
       {
         field: "actions",
         headerName: "Action",
@@ -264,7 +264,7 @@ export default function CompanyList() {
         filterable: false,
       },
     ],
-    [handleEdit, handleDelete]
+    [handleEdit, handleDelete, handleSetContext]
   );
 
   if (isLoading) {

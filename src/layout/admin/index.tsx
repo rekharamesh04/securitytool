@@ -1,6 +1,6 @@
 "use client";
 
-import useAuth from "@/hooks/useAuth";
+import useAuth from "@/hooks/useAuth"; // Assuming useAuth correctly accesses your AuthContext
 import { Theme, SxProps } from "@mui/material/styles";
 import { PageContainer } from "@toolpad/core";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
@@ -8,10 +8,10 @@ import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import adminNavigation from "./navigation";
 import { NextAppProvider } from "@toolpad/core/nextjs";
-import { CompanyProvider, useCompanyContext } from "@/contexts/CompanyContext";
+import { CompanyProvider, useCompanyContext } from "@/contexts/CompanyContext"; // Keep if needed for CompanyContext
 import Image from "next/image";
 import { createTheme, alpha } from "@mui/material/styles";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box, IconButton, Tooltip, CircularProgress, Typography } from "@mui/material"; // Import CircularProgress
 import { NightsStay, WbSunny } from "@mui/icons-material";
 import { UserMenu } from "@/components/UserMenu";
 
@@ -22,8 +22,8 @@ interface LayoutProps {
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { selectedCompany } = useCompanyContext();
-  
+  const { selectedCompany } = useCompanyContext(); // Use if needed for CompanyContext
+
   const pageContainerStyles: SxProps<Theme> = {
     color: (theme) => theme.palette.text.primary,
     "& .MuiTypography-h4": {
@@ -35,14 +35,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       marginBottom: "1.5rem",
       fontWeight: 700,
       fontFamily: "'Poppins', sans-serif",
-      transition: 'color 0.2s ease',
-      '&:hover': {
+      transition: "color 0.2s ease",
+      "&:hover": {
         color: (theme) => theme.palette.mode === "light" ? "#4570EA" : "#7DA2FF"
       }
     },
     "& .MuiTypography-body1": {
       color: (theme) =>
-        theme.palette.mode === "light" 
+        theme.palette.mode === "light"
           ? alpha(theme.palette.text.primary, 0.85)
           : alpha(theme.palette.text.primary, 0.9),
       fontSize: "1.05rem",
@@ -51,13 +51,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       fontFamily: "'Inter', sans-serif",
     },
     "& .MuiButton-root": {
-      transition: 'all 0.2s ease',
-      '&:hover': {
-        transform: 'translateY(-2px)',
-        boxShadow: (theme) => 
-          theme.palette.mode === 'light'
-            ? '0 4px 12px rgba(93, 135, 255, 0.25)'
-            : '0 4px 12px rgba(93, 135, 255, 0.35)'
+      transition: "all 0.2s ease",
+      "&:hover": {
+        transform: "translateY(-2px)",
+        boxShadow: (theme) =>
+          theme.palette.mode === "light"
+            ? "0 4px 12px rgba(93, 135, 255, 0.25)"
+            : "0 4px 12px rgba(93, 135, 255, 0.35)"
       }
     },
     // Beautiful table styles
@@ -65,15 +65,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       border: 'none',
       fontFamily: "'Inter', sans-serif",
       "& .MuiDataGrid-columnHeaders": {
-        backgroundColor: (theme) => 
-          theme.palette.mode === 'light' 
-            ? alpha(theme.palette.primary.light, 0.2) 
+        backgroundColor: (theme) =>
+          theme.palette.mode === 'light'
+            ? alpha(theme.palette.primary.light, 0.2)
             : alpha(theme.palette.primary.dark, 0.3),
         fontSize: '0.875rem',
         fontWeight: 600,
       },
       "& .MuiDataGrid-cell": {
-        borderBottom: (theme) => 
+        borderBottom: (theme) =>
           `1px solid ${
             theme.palette.mode === 'light'
               ? 'rgba(0, 0, 0, 0.08)'
@@ -83,18 +83,18 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       "& .MuiDataGrid-row": {
         transition: 'all 0.2s ease',
         '&:hover': {
-          backgroundColor: (theme) => 
+          backgroundColor: (theme) =>
             theme.palette.mode === 'light'
               ? alpha(theme.palette.primary.light, 0.1)
               : alpha(theme.palette.primary.dark, 0.2),
         },
         '&.Mui-selected': {
-          backgroundColor: (theme) => 
+          backgroundColor: (theme) =>
             theme.palette.mode === 'light'
               ? alpha(theme.palette.primary.light, 0.3)
               : alpha(theme.palette.primary.dark, 0.4),
           '&:hover': {
-            backgroundColor: (theme) => 
+            backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? alpha(theme.palette.primary.light, 0.4)
                 : alpha(theme.palette.primary.dark, 0.5),
@@ -122,7 +122,8 @@ export default function AdminLayout(props: LayoutProps) {
   const { window, children } = props;
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isInitialized } = useAuth(); // Destructure isInitialized
+  console.log(user, "user from useAuth"); // This will now log the actual user or null after init
 
   const demoWindow = window !== undefined ? window() : undefined;
   const normalizedPathname = pathname.replace(/\/+$/, "");
@@ -210,7 +211,7 @@ export default function AdminLayout(props: LayoutProps) {
         MuiPaper: {
           styleOverrides: {
             root: {
-              boxShadow: mode === 'light' 
+              boxShadow: mode === 'light'
                 ? '0 2px 10px 0 rgba(0, 0, 0, 0.05)'
                 : '0 2px 10px 0 rgba(0, 0, 0, 0.2)',
             },
@@ -223,17 +224,17 @@ export default function AdminLayout(props: LayoutProps) {
 
   const dashboardStyles: SxProps<Theme> = {
     flex: 1,
-    background: (theme) => 
+    background: (theme) =>
       theme.palette.mode === 'light'
         ? '#f8fafc'
         : '#121212',
     "& .MuiAppBar-root": {
       backgroundColor: (theme) =>
-        theme.palette.mode === "light" 
-          ? "#F5F7FF" 
+        theme.palette.mode === "light"
+          ? "#F5F7FF"
           : "#1A1A1A",
       color: (theme) => theme.palette.text.primary,
-      boxShadow: (theme) => 
+      boxShadow: (theme) =>
         theme.palette.mode === 'light'
           ? '0 2px 8px rgba(93, 135, 255, 0.1)'
           : '0 2px 8px rgba(0, 0, 0, 0.3)',
@@ -275,7 +276,7 @@ export default function AdminLayout(props: LayoutProps) {
               ? "rgba(93, 135, 255, 0.2)"
               : "rgba(255, 255, 255, 0.1)"
           }`,
-        boxShadow: (theme) => 
+        boxShadow: (theme) =>
           theme.palette.mode === 'light'
             ? '2px 0 8px rgba(93, 135, 255, 0.1)'
             : '2px 0 8px rgba(0, 0, 0, 0.3)',
@@ -287,7 +288,7 @@ export default function AdminLayout(props: LayoutProps) {
         color: "white !important",
       },
       background: `linear-gradient(135deg, #5D87FF 0%, #49BEFF 100%) !important`,
-      boxShadow: (theme) => 
+      boxShadow: (theme) =>
         theme.palette.mode === 'light'
           ? '0 4px 12px rgba(93, 135, 255, 0.3)'
           : '0 4px 12px rgba(93, 135, 255, 0.4)',
@@ -340,6 +341,24 @@ export default function AdminLayout(props: LayoutProps) {
     },
   };
 
+  // CONDITIONAL RENDERING BASED ON INITIALIZATION
+  if (!isInitialized) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default
+      }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2, color: theme.palette.text.primary }}>
+          Loading user data...
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <NextAppProvider
       navigation={adminNavigation}
@@ -362,7 +381,7 @@ export default function AdminLayout(props: LayoutProps) {
               src="/logo.png"
               alt="Monitoring App"
               fill
-              style={{ 
+              style={{
                 objectFit: "contain",
                 filter: theme.palette.mode === 'dark' ? 'brightness(0.8) contrast(1.2)' : 'none'
               }}
@@ -381,16 +400,16 @@ export default function AdminLayout(props: LayoutProps) {
       window={demoWindow}
     >
       <CompanyProvider>
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
           minHeight: '100vh',
           overflowX: 'hidden',
           width: '100%',
           backgroundColor: (theme) => theme.palette.background.default
         }}>
-          <DashboardLayout 
-            sx={{ 
+          <DashboardLayout
+            sx={{
               flex: 1,
               width: '100%',
               maxWidth: '100%',
@@ -401,11 +420,11 @@ export default function AdminLayout(props: LayoutProps) {
               '& .MuiToolbar-root': {
                 minHeight: '64px',
               },
-              ...dashboardStyles 
+              ...dashboardStyles
             }}
           >
             <LayoutContent>{children}</LayoutContent>
-            
+
             <Box
               sx={{
                 position: 'fixed',
@@ -418,10 +437,10 @@ export default function AdminLayout(props: LayoutProps) {
               }}
             >
               <Tooltip title="Toggle Theme" arrow>
-                <IconButton 
-                  onClick={colorMode.toggleColorMode} 
+                <IconButton
+                  onClick={colorMode.toggleColorMode}
                   color="inherit"
-                  sx={{ 
+                  sx={{
                     height: 40,
                     width: 40,
                     borderRadius: '20px',
@@ -447,14 +466,13 @@ export default function AdminLayout(props: LayoutProps) {
                 </IconButton>
               </Tooltip>
 
-              {user && (
+              {user && ( // Only render UserMenu if user is not null
                 <UserMenu
                   user={user}
                   handleMenuOpen={handleMenuOpen}
                   anchorEl={anchorEl}
                   open={open}
                   handleMenuClose={handleMenuClose}
-                  handleNavigation={handleNavigation}
                   logout={logout}
                 />
               )}

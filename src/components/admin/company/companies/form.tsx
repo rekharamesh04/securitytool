@@ -74,10 +74,19 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
       reader.onload = (e) => {
         if (e.target?.result) {
           setSelectedImage(e.target.result as string);
+          // When a new image is selected, it effectively replaces the existing one
+          setExistingImage(null);
         }
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Function to remove the selected/existing image
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImageFile(null);
+    setExistingImage(null); // This will tell the backend to clear the image
   };
 
   // Handle form submission
@@ -88,12 +97,18 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
     formData.append("name", data.name);
     formData.append("status", String(data.status));
 
-    // Add image to form data if it exists
+ // Add image to form data if it exists
     if (imageFile) {
-      formData.append("image", imageFile);
-    } else if (existingImage && !imageFile && id !== "new") {
-      // For existing images when editing without changes
-      formData.append("existingImage", existingImage);
+        formData.append("image", imageFile);
+    } else if (existingImage) {
+        // If no new image is selected but an existing one is present,
+        // send its path to the backend so it doesn't get removed.
+        formData.append("existingImage", existingImage);
+    } else if (id !== "new" && !selectedImage && !imageFile && !existingImage) {
+        // If it's an existing company and no image is selected,
+        // and no existing image was present, or it was explicitly removed,
+        // tell the backend to clear the image.
+        formData.append("clearImage", "true");
     }
 
     // Define the endpoint based on whether it's a create or update operation
@@ -133,8 +148,13 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
         const response = await axiosInstance.get(`${fetchUrl}/${id}`);
         reset(response.data);
         if (response.data.image) {
-          setSelectedImage(response.data.image);
-          setExistingImage(response.data.image);
+          // Prepend base URL if not already included
+          const imageUrl = response.data.image.startsWith('/') ? response.data.image : `/${response.data.image}`;
+          setSelectedImage(imageUrl);
+          setExistingImage(imageUrl);
+        } else {
+            setSelectedImage(null);
+            setExistingImage(null);
         }
       } catch (error: any) {
         const { response } = error;
@@ -453,8 +473,9 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
                         backgroundColor: theme.palette.background.paper,
                       },
                     }}
+                    onClick={handleRemoveImage}
                   >
-                    <Icon>edit</Icon>
+                    <Icon>delete</Icon>
                   </IconButton>
                 </Box>
               </Box>

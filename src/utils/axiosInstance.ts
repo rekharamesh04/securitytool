@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getSession, removeSession } from "./jwt";
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
@@ -14,17 +15,17 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Interceptor for adding the Authorization token
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Only access localStorage in the browser environment
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('companyToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = getSession();
+    if(token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      delete config.headers.Authorization;
     }
     return config;
   },
@@ -40,8 +41,15 @@ axiosInstance.interceptors.response.use(
   },
   error => {
     const { response } = error;
-    if (response && response.status === 403) {
-      console.warn("Received 403 Forbidden. Consider redirecting to /forbidden.");
+    if (response) {
+      // Handle 401/403 globally or in a more specific way
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`Authentication/Authorization issue: Status ${response.status}.`);
+        // Centralized logout logic if needed, but often handled in AuthProvider's catch block
+        // to avoid redirect loops or conflicts with specific component error handling.
+        // For example, if a 401 happens on get-profile, AuthProvider catches it and logs out.
+        removeSession(); // Clear session if token is invalid/expired
+      }
     }
     return Promise.reject(error);
   }
