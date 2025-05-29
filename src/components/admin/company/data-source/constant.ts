@@ -35,6 +35,11 @@ export interface FormModel {
   secret_access_key: string;
   region: string;
   bucket_name: string;
+  host: string;
+  username: string;
+  password: string;
+  port: string;
+  database_name: string;
   status: boolean;
   // For MongoDB Atlas
   connectionString?: string;

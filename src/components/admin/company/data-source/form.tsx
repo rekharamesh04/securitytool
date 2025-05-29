@@ -27,44 +27,6 @@ import { Theme } from "@mui/material/styles";
 import { alpha } from "@mui/system";
 import theme from "@/theme/theme";
 
-
-// Extended validation schema for AWS S3
-// const validationSchema = yup.object().shape({
-//   company: yup.object().required("Company is required"),
-//   datastore: yup.string().nullable().notRequired(),
-//   account: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-//     return datastore === "AWS" && subCategory === "S3"
-//       ? schema.notRequired()
-//       : schema.required("Account is required");
-//   }),
-//   subCategory: yup.string().required("Sub-category is required"),
-//   selectedSubCategory: yup.string().required("selectedSubCategory is required"),
-
-//   data: yup.string().required("Data is required"),
-  // status: yup.boolean().required(),
-
-//   your_access_key: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-//     return datastore === "AWS" && subCategory === "S3"
-//       ? schema.required("AWS Access Key ID is required")
-//       : schema.notRequired();
-//   }),
-//   your_secret_key: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-//     return datastore === "AWS" && subCategory === "S3"
-//       ? schema.required("AWS Secret Access Key is required")
-//       : schema.notRequired();
-//   }),
-//   region: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-//     return datastore === "AWS" && subCategory === "S3"
-//       ? schema.required("AWS Region is required")
-//       : schema.notRequired();
-//   }),
-//   bucket_name: yup.string().when(["datastore", "subCategory"], ([datastore, subCategory], schema) => {
-//     return datastore === "AWS" && subCategory === "S3"
-//       ? schema.required("S3 Bucket Name is required")
-//       : schema.notRequired();
-//   }),
-// });
-
 // Define database types
 const DATABASE_TYPES = [
   "MySQL",
@@ -72,14 +34,15 @@ const DATABASE_TYPES = [
   "MsSQL",
   "MongoDB",
   "Oracle",
-  "SQL Server",
+  "Sqlite",
 ];
 
 // Connection string examples
 const CONNECTION_STRING_EXAMPLES: Record<string, string> = {
-  MySQL: "jdbc:mysql://hostname:3306/database",
-  PostgreSQL: "jdbc:postgresql://hostname:5432/database",
+  MySQL: "mysql://user:pass@localhost:3306/mydb",
+  PostgreSQL: "postgresql://user:pass@localhost:5432/mydb",
   MongoDB: "mongodb://username:password@hostname:27017/database",
+  MsSQL: "mssql://user:pass@localhost:1433/mydb",
   Oracle: "jdbc:oracle:thin:@hostname:1521:SID",
   "SQL Server": "jdbc:sqlserver://hostname:1433;databaseName=database",
   "AWS RDS": "jdbc:mysql://rds-instance.aws.com:3306/database",
@@ -352,6 +315,11 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
         secret_access_key: data.secret_access_key,
         region: data.region,
         bucket_name: data.bucket_name,
+        host: data.host,
+        database_name: data.database_name,
+        username: data.username,
+        password: data.password,
+        port: data.port,
         subCategory: data.subCategory || null,
       };
 
@@ -1657,7 +1625,66 @@ export default function DataSourceForm({ id, open, onClose }: FormProps) {
               />
             </>
           ) :
-          isDatabase ? (
+          isDatabase && datastore == "Sqlite" ? (
+            <>
+              <TextField
+                label="Host"
+                {...register("host")}
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                // error={!!errors.ec2Host}
+                // helperText={errors.ec2Host?.message}
+                // {...register("ec2Host")}
+              />
+
+              <TextField
+                label="Database File Path"
+                {...register("database_name")}
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                placeholder="e.g., C:/data/mydb.sqlite"
+                // error={!!errors.ec2KeyPath}
+                // helperText={errors.ec2KeyPath?.message}
+                // {...register("ec2KeyPath")}
+              />
+
+              <TextField
+                label="Username"
+                {...register("username")}
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                // error={!!errors.ec2Username}
+                // helperText={errors.ec2Username?.message}
+                // {...register("ec2Username")}
+              />
+
+              <TextField
+                label="Password"
+                {...register("password")}
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                // error={!!errors.ec2Username}
+                // helperText={errors.ec2Username?.message}
+                // {...register("ec2Username")}
+              />
+
+              <TextField
+                label="Port (optional)"
+                {...register("port")}
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                // error={!!errors.ec2Port}
+                // helperText={errors.ec2Port?.message}
+                // {...register("ec2Port")}
+              />
+            </>
+          ) :
+          isDatabase && datastore !== "Sqlite" ? (
             <TextField
               label="Connection String"
               fullWidth

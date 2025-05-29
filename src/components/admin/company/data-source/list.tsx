@@ -282,7 +282,7 @@ export default function DataSource() {
 
       mutate(`${fetchUrl}?${params}`, { revalidate: true });
 
-      notifications.show(data.message || "Scan completed successfully", {
+      notifications.show(response.data.message || "Scan completed successfully", {
         severity: "success",
       });
     } catch (error: any) {
