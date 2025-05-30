@@ -36,6 +36,10 @@ interface Company {
   image?: string;
 }
 
+// Define your backend base URL (e.g., from an environment variable)
+const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:5001";
+
 export default function CompanyList() {
   const router = useRouter();
   const [paginationModel, setPaginationModel] = useState({
@@ -160,44 +164,69 @@ export default function CompanyList() {
         },
         width: 200,
       },
-    {
-        field: "image",
-        headerName: "Logo",
-        width: 80,
-        renderCell: (params: any) => {
-          const logoUrl = params.row.image ? `${params.row.image}` : null; // Backend provides relative path
-          return (
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "1px solid #e0e0e0",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: logoUrl ? "transparent" : "#f5f5f5",
-                marginTop: "5px",
-                }}
-              >
-                {logoUrl ? (
-                  <img
-                    src={logoUrl} // Use the relative path directly
-                    alt="Company Logo"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <Icon sx={{ color: "#9e9e9e", fontSize: "20px" }}>image</Icon>
-                )}
-              </Box>
-            );
-          },
-      },
+{
+  field: "image",
+  headerName: "Logo",
+  width: 120,
+  renderCell: (params: any) => {
+    const logoUrl = params.row.image 
+      ? `${BACKEND_BASE_URL}${params.row.image}`
+      : null;
+    return (
+      <Box
+        sx={{
+          width: 60,
+          height: 50,
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid #e0e0e0",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: logoUrl ? "transparent" : "#f5f5f5",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            transform: "scale(1.05)",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            borderColor: "#bdbdbd",
+          },
+        }}
+      >
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt="Company Logo"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "fill",
+              transition: "transform 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          />
+        ) : (
+          <Icon
+            sx={{
+              color: "#9e9e9e",
+              fontSize: "30px",
+              transition: "transform 0.3s ease",
+              "&:hover": {
+                transform: "scale(1.2)",
+              },
+            }}
+          >
+            image
+          </Icon>
+        )}
+      </Box>
+    );
+  },
+},
       {
         field: "actions",
         headerName: "Action",

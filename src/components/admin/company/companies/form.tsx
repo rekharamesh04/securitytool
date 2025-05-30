@@ -27,6 +27,9 @@ import { alpha } from "@mui/material/styles";
 import theme from "@/theme/theme";
 import { Theme } from "@mui/material/styles";
 
+// Define your backend base URL (e.g., from an environment variable)
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
+
 // Define the validation schema using Yup
 const validationSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -42,7 +45,7 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
   const notifications = useNotifications();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [existingImage, setExistingImage] = useState<string | null>(null);
+  const [originalBackendImagePath, setOriginalBackendImagePath] = useState<string | null>(null); // The path received from backend
 
   // Initialize React Hook Form
   const {
@@ -66,6 +69,9 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
         notifications.show("Please select an image file", {
           severity: "error",
         });
+                        // Clear any previously selected file/preview if the new one is invalid
+                setSelectedImage(null);
+                setImageFile(null);
         return;
       }
 
@@ -75,18 +81,22 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
         if (e.target?.result) {
           setSelectedImage(e.target.result as string);
           // When a new image is selected, it effectively replaces the existing one
-          setExistingImage(null);
         }
       };
       reader.readAsDataURL(file);
-    }
+    } else {
+            // If the file input is cleared (e.g., user selects no file after opening)
+            setSelectedImage(null);
+            setImageFile(null);
+            // Don't change originalBackendImagePath here; it represents the *current* image from DB
+        }
   };
 
   // Function to remove the selected/existing image
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImageFile(null);
-    setExistingImage(null); // This will tell the backend to clear the image
+    setOriginalBackendImagePath(null); // Explicitly mark for deletion on backend
   };
 
   // Handle form submission
@@ -100,17 +110,11 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
  // Add image to form data if it exists
     if (imageFile) {
         formData.append("image", imageFile);
-    } else if (existingImage) {
+    } else if (originalBackendImagePath == null) {
         // If no new image is selected but an existing one is present,
         // send its path to the backend so it doesn't get removed.
-        formData.append("existingImage", existingImage);
-    } else if (id !== "new" && !selectedImage && !imageFile && !existingImage) {
-        // If it's an existing company and no image is selected,
-        // and no existing image was present, or it was explicitly removed,
-        // tell the backend to clear the image.
         formData.append("clearImage", "true");
     }
-
     // Define the endpoint based on whether it's a create or update operation
     const url = id !== "new" ? `${fetchUrl}/${id}` : `${fetchUrl}/`;
     const method = id !== "new" ? "put" : "post";
@@ -138,32 +142,36 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
     } catch (error) {
       // Handle error
       console.error("Error saving user information:", error);
+      notifications.show("Failed to save company. Please try again.", { severity: "error" });
       onClose("false");
     }
   };
 
   const bindData = useCallback(
-    async (id: any) => {
+    async (companyId: any) => {
       try {
-        const response = await axiosInstance.get(`${fetchUrl}/${id}`);
-        reset(response.data);
-        if (response.data.image) {
-          // Prepend base URL if not already included
-          const imageUrl = response.data.image.startsWith('/') ? response.data.image : `/${response.data.image}`;
-          setSelectedImage(imageUrl);
-          setExistingImage(imageUrl);
+        const response = await axiosInstance.get(`${fetchUrl}/${companyId}`);
+        const companyData = response.data;
+                reset(companyData); // Populate form fields
+        if (companyData.image) {
+          // Prepend backend base URL for display
+          const fullImageUrl = `${BACKEND_BASE_URL}${companyData.image}`;
+          setSelectedImage(fullImageUrl);
+          setOriginalBackendImagePath(companyData.image);
         } else {
             setSelectedImage(null);
-            setExistingImage(null);
+            setOriginalBackendImagePath(null);
         }
       } catch (error: any) {
         const { response } = error;
         if (response && response.status == 403) {
           router.push("/forbidden");
-        }
+        }else {
+                    notifications.show("Failed to load company data.", { severity: "error" });
+                }
       }
     },
-    [router, reset]
+    [router, reset, notifications]
   );
 
   // Optionally, fetch and prefill form data for editing based on ID
@@ -174,7 +182,7 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
       reset(defaultValues);
       setSelectedImage(null);
       setImageFile(null);
-      setExistingImage(null);
+      setOriginalBackendImagePath(null);
     }
   }, [id, bindData, reset]);
   return (
@@ -397,6 +405,8 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
                   hidden
                   accept="image/*"
                   onChange={handleImageUpload}
+                  // Make sure input is reset if image is removed programmatically
+                  key={selectedImage || 'no-image'} // Forces re-render of input when image cleared
                 />
               </Button>
               <Typography
@@ -415,7 +425,7 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
               </Typography>
             </Box>
 
-            {(selectedImage || existingImage) && (
+            {(selectedImage || originalBackendImagePath) && ( // Display if there's a selected new image or an existing one
               <Box
                 sx={{
                   width: "100px",
@@ -436,7 +446,7 @@ export default function CompanyForm({ id, open, onClose }: FormProps) {
                 }}
               >
                 <img
-                  src={selectedImage || existingImage || ""}
+                  src={selectedImage || `${BACKEND_BASE_URL}${originalBackendImagePath}` || ""} // Use selectedImage (data URL) or constructed URL from original path
                   alt="Company Logo"
                   style={{
                     width: "100%",

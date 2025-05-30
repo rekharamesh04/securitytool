@@ -19,7 +19,7 @@ interface AuthUser {
   email: string;
   name: string;
   company?: CompanyData;
-  role?: { _id: string; name: string };
+  role?: string | { _id: string; name: string };
 }
 
 // Define the type for login data - matches your FormData in SignIn component
